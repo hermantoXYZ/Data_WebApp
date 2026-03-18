@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin:data_import' %}" class="addlink">
+    Import Data (CSV/Excel/JSON)
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:data_template' %}" class="addlink">
+    Download Template
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}
