@@ -1,5 +1,5 @@
 import uuid
-from django.db import models
+from django.contrib.gis.db import models
 
 class Wilayah(models.Model):
     choices_tipe_wilayah = [
@@ -13,7 +13,7 @@ class Wilayah(models.Model):
     nama_wilayah = models.CharField(max_length=255)
     tipe_wilayah = models.CharField(max_length=50, choices=choices_tipe_wilayah)
     kode_wilayah = models.CharField(max_length=20, unique=True, blank=True, null=True)
-
+    geom = models.MultiPolygonField(srid=4326, blank=True, null=True)   
 
     def __str__(self):
         return self.nama_wilayah
