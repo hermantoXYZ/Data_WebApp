@@ -1,833 +1,1604 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Data Wilayah Indonesia{% endblock %}</title>
-  <meta name="description" content="Portal data wilayah dan fiskal Indonesia dengan visualisasi geospasial interaktif." />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Data Wilayah Indonesia{% endblock %}</title>
+    <meta name="description"
+        content="Portal data wilayah dan fiskal Indonesia dengan visualisasi geospasial interaktif." />
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
-    :root {
-      --primary:    #1a4f8a;
-      --primary-dk: #0d3665;
-      --accent:     #e63946;
-      --light-bg:   #f4f6f9;
-      --border:     #dde1e7;
-      --text:       #1d2939;
-      --text-muted: #667085;
-      --white:      #ffffff;
-      --footer-top: #2d3748;
-      --footer-bot: #1a202c;
-      --shadow:     0 2px 12px rgba(0,0,0,.10);
-    }
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      color: var(--text);
-      background: var(--light-bg);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
+        :root {
+            --primary: #1a4f8a;
+            --primary-dk: #0d3665;
+            --accent: #e63946;
+            --light-bg: #f4f6f9;
+            --border: #dde1e7;
+            --text: #1d2939;
+            --text-muted: #667085;
+            --white: #ffffff;
+            --footer-top: #2d3748;
+            --footer-bot: #1a202c;
+            --shadow: 0 2px 12px rgba(0, 0, 0, .10);
+        }
 
-    /* ── NAVBAR ─────────────────────────────────── */
-    .navbar {
-      background: var(--white);
-      border-bottom: 3px solid var(--primary);
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .navbar-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-      gap: 1rem;
-    }
-    .navbar-brand {
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-      text-decoration: none;
-      flex-shrink: 0;
-    }
-    .brand-flag {
-      font-size: 1.6rem;
-      line-height: 1;
-    }
-    .brand-name {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: -.5px;
-    }
-    .brand-name span { color: var(--accent); }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--light-bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: .25rem;
-      list-style: none;
-    }
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text);
-      font-size: .875rem;
-      font-weight: 500;
-      padding: .45rem .85rem;
-      border-radius: 6px;
-      transition: background .2s, color .2s;
-    }
-    .nav-links a:hover, .nav-links a.active {
-      background: var(--primary);
-      color: var(--white);
-    }
+        /* ── NAVBAR ─────────────────────────────────── */
+        .navbar {
+            background: var(--white);
+            border-bottom: 3px solid var(--primary);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-    .nav-filter {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      flex-shrink: 0;
-    }
-    .nav-filter label {
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-    .nav-filter select {
-      font-family: inherit;
-      font-size: .85rem;
-      padding: .35rem .75rem;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      background: var(--white);
-      color: var(--text);
-      cursor: pointer;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .nav-filter select:focus { border-color: var(--primary); }
+        .navbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            gap: 1rem;
+        }
 
-    /* hamburger */
-    .hamburger {
-      display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      flex-direction: column;
-      gap: 5px;
-      padding: 4px;
-    }
-    .hamburger span {
-      display: block;
-      width: 24px;
-      height: 2.5px;
-      background: var(--text);
-      border-radius: 2px;
-      transition: transform .3s;
-    }
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
 
-    /* ── MAIN ────────────────────────────────────── */
-    main { flex: 1; }
+        .brand-flag {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
 
-    /* hero strip */
-    .hero-strip {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
-      color: var(--white);
-      padding: 1rem 1.5rem;
-    }
-    .hero-strip-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: .75rem;
-    }
-    .hero-strip h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      opacity: .95;
-    }
-    .hero-strip p {
-      font-size: .8rem;
-      opacity: .75;
-      margin-top: .15rem;
-    }
-    .stat-chips {
-      display: flex;
-      gap: .6rem;
-      flex-wrap: wrap;
-    }
-    .chip {
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.3);
-      border-radius: 20px;
-      padding: .3rem .85rem;
-      font-size: .78rem;
-      font-weight: 600;
-      backdrop-filter: blur(4px);
-    }
-    .chip span { color: #ffd166; margin-right: .3rem; }
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -.5px;
+        }
 
-    /* ── CONTENT AREA ───────────────────────────── */
-    .content-area {
-      max-width: 1280px;
-      margin: 1.5rem auto;
-      padding: 0 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 1.25rem;
-      align-items: start;
-    }
+        .brand-name span {
+            color: var(--accent);
+        }
 
-    /* MAP CARD */
-    .map-card {
-      background: var(--white);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .map-card-header {
-      padding: .85rem 1.1rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: .5rem;
-    }
-    .map-card-header h2 {
-      font-size: .95rem;
-      font-weight: 600;
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-    }
-    .map-card-header h2::before {
-      content: '';
-      display: inline-block;
-      width: 4px;
-      height: 16px;
-      background: var(--accent);
-      border-radius: 2px;
-    }
-    .map-hint {
-      font-size: .76rem;
-      color: var(--text-muted);
-      background: var(--light-bg);
-      padding: .2rem .6rem;
-      border-radius: 4px;
-    }
-    #map {
-      height: 520px;
-      width: 100%;
-    }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+            list-style: none;
+        }
 
-    /* SIDEBAR */
-    .sidebar { display: flex; flex-direction: column; gap: 1.1rem; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-size: .875rem;
+            font-weight: 500;
+            padding: .45rem .85rem;
+            border-radius: 6px;
+            transition: background .2s, color .2s;
+        }
 
-    .info-card {
-      background: var(--white);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .info-card-head {
-      background: var(--primary);
-      color: var(--white);
-      padding: .75rem 1rem;
-      font-size: .875rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: .4rem;
-    }
-    .info-card-body { padding: 1rem; }
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--primary);
+            color: var(--white);
+        }
 
-    /* placeholder */
-    .placeholder-box {
-      text-align: center;
-      padding: 2rem 1rem;
-      color: var(--text-muted);
-    }
-    .placeholder-box .ico { font-size: 2.5rem; margin-bottom: .5rem; }
-    .placeholder-box p { font-size: .82rem; line-height: 1.5; }
+        .nav-filter {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-shrink: 0;
+        }
 
-    /* wilayah info */
-    .wilayah-info { display: none; }
-    .wilayah-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: .15rem;
-    }
-    .wilayah-badge {
-      display: inline-block;
-      background: var(--light-bg);
-      color: var(--text-muted);
-      font-size: .72rem;
-      font-weight: 600;
-      padding: .2rem .6rem;
-      border-radius: 4px;
-      margin-bottom: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
+        .nav-filter label {
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
 
-    /* filter tahun inside sidebar */
-    .tahun-filter {
-      display: flex;
-      gap: .4rem;
-      flex-wrap: wrap;
-      margin-bottom: .75rem;
-    }
-    .tahun-btn {
-      font-size: .75rem;
-      font-weight: 600;
-      padding: .25rem .6rem;
-      border: 1.5px solid var(--border);
-      border-radius: 4px;
-      background: var(--white);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .tahun-btn:hover, .tahun-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: var(--white);
-    }
+        .nav-filter select {
+            font-family: inherit;
+            font-size: .85rem;
+            padding: .35rem .75rem;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+            transition: border-color .2s;
+        }
 
-    /* data table */
-    .data-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-    .data-table th {
-      background: var(--light-bg);
-      padding: .45rem .6rem;
-      text-align: left;
-      font-size: .75rem;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-    }
-    .data-table td {
-      padding: .5rem .6rem;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: var(--light-bg); }
-    .data-table .nilai { font-weight: 600; color: var(--primary); text-align: right; }
-    .data-table .variabel-name { font-weight: 500; }
-    .data-table .variabel-desc { font-size: .72rem; color: var(--text-muted); }
+        .nav-filter select:focus {
+            border-color: var(--primary);
+        }
 
-    .loading-row { text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: .82rem; }
+        /* hamburger */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+            padding: 4px;
+        }
 
-    /* quick stats */
-    .quick-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .6rem;
-      margin-top: .75rem;
-    }
-    .stat-box {
-      background: var(--light-bg);
-      border-radius: 8px;
-      padding: .6rem .75rem;
-      text-align: center;
-    }
-    .stat-box .stat-val {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .stat-box .stat-lbl {
-      font-size: .68rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      margin-top: .1rem;
-    }
+        .hamburger span {
+            display: block;
+            width: 24px;
+            height: 2.5px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: transform .3s;
+        }
 
-    /* legend */
-    .legend-card .info-card-body { padding: .75rem 1rem; }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      font-size: .8rem;
-      color: var(--text-muted);
-      margin-bottom: .3rem;
-    }
-    .legend-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-      flex-shrink: 0;
-    }
+        /* ── MAIN ────────────────────────────────────── */
+        main {
+            flex: 1;
+        }
 
-    /* ── FOOTER ──────────────────────────────────── */
-    footer { margin-top: 2rem; }
+        /* hero strip */
+        .hero-strip {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+        }
 
-    .footer-top {
-      background: var(--footer-top);
-      color: #e2e8f0;
-      padding: 1rem 1.5rem;
-    }
-    .footer-top-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: .75rem;
-    }
-    .footer-brand { display: flex; align-items: center; gap: .5rem; }
-    .footer-brand-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--white);
-      letter-spacing: -.3px;
-    }
-    .footer-brand-name span { color: #ffd166; }
-    .footer-top-links {
-      display: flex;
-      gap: .5rem 1.25rem;
-      flex-wrap: wrap;
-      list-style: none;
-    }
-    .footer-top-links a {
-      text-decoration: none;
-      color: #a0aec0;
-      font-size: .8rem;
-      transition: color .2s;
-    }
-    .footer-top-links a:hover { color: var(--white); }
-    .footer-sep { color: #4a5568; }
+        .hero-strip-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+        }
 
-    .footer-bot {
-      background: var(--footer-bot);
-      color: #718096;
-      padding: 1.25rem 1.5rem;
-    }
-    .footer-bot-inner {
-      max-width: 1280px;
-      margin: 0 auto;
-    }
-    .footer-org {
-      display: flex;
-      align-items: flex-start;
-      gap: .85rem;
-      margin-bottom: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #2d3748;
-    }
-    .footer-org-icon {
-      background: var(--primary);
-      color: var(--white);
-      font-size: .75rem;
-      font-weight: 800;
-      padding: .4rem .5rem;
-      border-radius: 4px;
-      flex-shrink: 0;
-    }
-    .footer-org p { font-size: .8rem; line-height: 1.5; }
-    .footer-org a { color: #63b3ed; text-decoration: none; }
-    .footer-org a:hover { text-decoration: underline; }
+        .hero-strip h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: .95;
+        }
 
-    .footer-links-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: .4rem .75rem;
-      margin-bottom: .85rem;
-    }
-    .footer-links-grid a {
-      color: #718096;
-      font-size: .78rem;
-      text-decoration: none;
-      transition: color .2s;
-    }
-    .footer-links-grid a:hover { color: #a0aec0; }
+        .hero-strip p {
+            font-size: .8rem;
+            opacity: .75;
+            margin-top: .15rem;
+        }
 
-    .footer-copy {
-      font-size: .75rem;
-      color: #4a5568;
-      padding-top: .75rem;
-      border-top: 1px solid #2d3748;
-    }
-    .footer-copy a { color: #63b3ed; text-decoration: none; }
+        .stat-chips {
+            display: flex;
+            gap: .6rem;
+            flex-wrap: wrap;
+        }
 
-    /* ── RESPONSIVE ──────────────────────────────── */
-    @media (max-width: 1024px) {
-      .content-area { grid-template-columns: 1fr; }
-      .sidebar { flex-direction: row; flex-wrap: wrap; }
-      .info-card { flex: 1 1 300px; }
-      #map { height: 420px; }
-    }
+        .chip {
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .3);
+            border-radius: 20px;
+            padding: .3rem .85rem;
+            font-size: .78rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
 
-    @media (max-width: 768px) {
-      .nav-links { display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: var(--white); padding: .75rem; box-shadow: var(--shadow); border-top: 1px solid var(--border); z-index: 999; }
-      .nav-links.open { display: flex; }
-      .hamburger { display: flex; }
-      .nav-filter { display: none; }
-      .hero-strip-inner { flex-direction: column; align-items: flex-start; }
-      .sidebar { flex-direction: column; }
-      #map { height: 350px; }
-      .footer-top-inner { flex-direction: column; align-items: flex-start; }
-      .quick-stats { grid-template-columns: 1fr 1fr; }
-    }
+        .chip span {
+            color: #ffd166;
+            margin-right: .3rem;
+        }
 
-    @media (max-width: 480px) {
-      .navbar-inner { padding: 0 1rem; }
-      .content-area { padding: 0 1rem; }
-      #map { height: 280px; }
-    }
-  </style>
-  {% block extra_head %}{% endblock %}
+        /* ── CONTENT AREA ───────────────────────────── */
+        .content-area {
+            max-width: 1280px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        /* MAP CARD */
+        .map-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .map-card-header {
+            padding: .85rem 1.1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .map-card-header h2 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .map-card-header h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .map-hint {
+            font-size: .76rem;
+            color: var(--text-muted);
+            background: var(--light-bg);
+            padding: .2rem .6rem;
+            border-radius: 4px;
+        }
+
+        #map {
+            height: 520px;
+            width: 100%;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .info-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .info-card-head {
+            background: var(--primary);
+            color: var(--white);
+            padding: .75rem 1rem;
+            font-size: .875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .info-card-body {
+            padding: 1rem;
+        }
+
+        /* placeholder */
+        .placeholder-box {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .placeholder-box .ico {
+            font-size: 2.5rem;
+            margin-bottom: .5rem;
+        }
+
+        .placeholder-box p {
+            font-size: .82rem;
+            line-height: 1.5;
+        }
+
+        /* wilayah info */
+        .wilayah-info {
+            display: none;
+        }
+
+        .wilayah-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: .15rem;
+        }
+
+        .wilayah-badge {
+            display: inline-block;
+            background: var(--light-bg);
+            color: var(--text-muted);
+            font-size: .72rem;
+            font-weight: 600;
+            padding: .2rem .6rem;
+            border-radius: 4px;
+            margin-bottom: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        /* filter tahun inside sidebar */
+        .tahun-filter {
+            display: flex;
+            gap: .4rem;
+            flex-wrap: wrap;
+            margin-bottom: .75rem;
+        }
+
+        .tahun-btn {
+            font-size: .75rem;
+            font-weight: 600;
+            padding: .25rem .6rem;
+            border: 1.5px solid var(--border);
+            border-radius: 4px;
+            background: var(--white);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .tahun-btn:hover,
+        .tahun-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        /* data table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .82rem;
+        }
+
+        .data-table th {
+            background: var(--light-bg);
+            padding: .45rem .6rem;
+            text-align: left;
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: .5rem .6rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: var(--light-bg);
+        }
+
+        .data-table .nilai {
+            font-weight: 600;
+            color: var(--primary);
+            text-align: right;
+        }
+
+        .data-table .variabel-name {
+            font-weight: 500;
+        }
+
+        .data-table .variabel-desc {
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        .loading-row {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: .82rem;
+        }
+
+        /* quick stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem;
+            margin-top: .75rem;
+        }
+
+        .stat-box {
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: .6rem .75rem;
+            text-align: center;
+        }
+
+        .stat-box .stat-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-box .stat-lbl {
+            font-size: .68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-top: .1rem;
+        }
+
+        /* legend */
+        .legend-card .info-card-body {
+            padding: .75rem 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .8rem;
+            color: var(--text-muted);
+            margin-bottom: .3rem;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* ── CHART SECTION ───────────────────────────── */
+        .chart-section {
+            max-width: 1280px;
+            margin: 1.5rem auto 0;
+            padding: 0 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .chart-card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+            color: var(--white);
+            padding: .85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .chart-card-header h3 {
+            font-size: .95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .chart-header-controls {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .chart-type-btn {
+            background: rgba(255, 255, 255, .15);
+            border: 1.5px solid rgba(255, 255, 255, .4);
+            color: var(--white);
+            font-size: .75rem;
+            font-weight: 600;
+            padding: .28rem .75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .chart-type-btn.active,
+        .chart-type-btn:hover {
+            background: rgba(255, 255, 255, .3);
+            border-color: var(--white);
+        }
+
+        .chart-select {
+            background: rgba(255, 255, 255, .15);
+            border: 1.5px solid rgba(255, 255, 255, .4);
+            color: var(--white);
+            font-size: .75rem;
+            padding: .28rem .6rem;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .chart-select option { background: var(--primary-dk); }
+
+        /* chart body = sidebar kiri + canvas kanan */
+        .chart-body {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 420px;
+        }
+
+        .chart-sidebar {
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chart-panel {
+            padding: .85rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .chart-panel:last-child { border-bottom: none; flex: 1; }
+
+        .chart-panel-title {
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+            margin-bottom: .6rem;
+        }
+
+        /* Variabel checklist */
+        .var-list {
+            display: flex;
+            flex-direction: column;
+            gap: .3rem;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .var-item {
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .8rem;
+            padding: .2rem .3rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background .15s;
+            user-select: none;
+        }
+
+        .var-item:hover { background: var(--light-bg); }
+
+        .var-item input[type=checkbox] {
+            accent-color: var(--primary);
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .var-item label {
+            cursor: pointer;
+            line-height: 1.3;
+            color: var(--text);
+        }
+
+        /* Wilayah chips */
+        .wilayah-chips {
+            display: flex;
+            flex-direction: column;
+            gap: .35rem;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .w-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .3rem .5rem;
+            border-radius: 6px;
+            font-size: .78rem;
+            font-weight: 500;
+            color: var(--white);
+            gap: .4rem;
+        }
+
+        .w-chip-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .w-chip-remove {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,.7);
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            padding: 0 .1rem;
+            flex-shrink: 0;
+            transition: color .15s;
+        }
+
+        .w-chip-remove:hover { color: var(--white); }
+
+        .chart-hint {
+            font-size: .72rem;
+            color: var(--text-muted);
+            margin-top: .5rem;
+            line-height: 1.4;
+        }
+
+        /* Chart canvas area */
+        .chart-area {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            text-align: center;
+            gap: .6rem;
+        }
+
+        .chart-placeholder .chart-ico { font-size: 3rem; }
+        .chart-placeholder p { font-size: .85rem; line-height: 1.6; }
+
+        .chart-canvas-wrap {
+            flex: 1;
+            position: relative;
+            min-height: 360px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .chart-body {
+                grid-template-columns: 1fr;
+            }
+            .chart-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .chart-panel {
+                flex: 1 1 200px;
+                border-bottom: none;
+                border-right: 1px solid var(--border);
+            }
+            .chart-panel:last-child { border-right: none; }
+            .chart-canvas-wrap { min-height: 280px; }
+        }
+
+        .chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .chart-card-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
+            color: var(--white);
+            padding: .85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .chart-card-header h3 {
+            font-size: .95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ── FOOTER ──────────────────────────────────── */
+        footer {
+            margin-top: 2rem;
+        }
+
+        .footer-top {
+            background: var(--footer-top);
+            color: #e2e8f0;
+            padding: 1rem 1.5rem;
+        }
+
+        .footer-top-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .footer-brand-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -.3px;
+        }
+
+        .footer-brand-name span {
+            color: #ffd166;
+        }
+
+        .footer-top-links {
+            display: flex;
+            gap: .5rem 1.25rem;
+            flex-wrap: wrap;
+            list-style: none;
+        }
+
+        .footer-top-links a {
+            text-decoration: none;
+            color: #a0aec0;
+            font-size: .8rem;
+            transition: color .2s;
+        }
+
+        .footer-top-links a:hover {
+            color: var(--white);
+        }
+
+        .footer-sep {
+            color: #4a5568;
+        }
+
+        .footer-bot {
+            background: var(--footer-bot);
+            color: #718096;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .footer-bot-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .footer-org {
+            display: flex;
+            align-items: flex-start;
+            gap: .85rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .footer-org-icon {
+            background: var(--primary);
+            color: var(--white);
+            font-size: .75rem;
+            font-weight: 800;
+            padding: .4rem .5rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .footer-org p {
+            font-size: .8rem;
+            line-height: 1.5;
+        }
+
+        .footer-org a {
+            color: #63b3ed;
+            text-decoration: none;
+        }
+
+        .footer-org a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: .4rem .75rem;
+            margin-bottom: .85rem;
+        }
+
+        .footer-links-grid a {
+            color: #718096;
+            font-size: .78rem;
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .footer-links-grid a:hover {
+            color: #a0aec0;
+        }
+
+        .footer-copy {
+            font-size: .75rem;
+            color: #4a5568;
+            padding-top: .75rem;
+            border-top: 1px solid #2d3748;
+        }
+
+        .footer-copy a {
+            color: #63b3ed;
+            text-decoration: none;
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────── */
+        @media (max-width: 1024px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .info-card {
+                flex: 1 1 300px;
+            }
+
+            #map {
+                height: 420px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--white);
+                padding: .75rem;
+                box-shadow: var(--shadow);
+                border-top: 1px solid var(--border);
+                z-index: 999;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-filter {
+                display: none;
+            }
+
+            .hero-strip-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .sidebar {
+                flex-direction: column;
+            }
+
+            #map {
+                height: 350px;
+            }
+
+            .footer-top-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-inner {
+                padding: 0 1rem;
+            }
+
+            .content-area {
+                padding: 0 1rem;
+            }
+
+            #map {
+                height: 280px;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
-<!-- ── NAVBAR ──────────────────────────────────────────── -->
-<nav class="navbar" role="navigation" aria-label="Menu utama">
-  <div class="navbar-inner">
-    <a href="{% url 'peta' %}" class="navbar-brand" aria-label="Beranda">
-      <span class="brand-flag">🇮🇩</span>
-      <span class="brand-name">DATA<span>.ID</span></span>
-    </a>
+    <!-- ── NAVBAR ──────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Menu utama">
+        <div class="navbar-inner">
+            <a href="{% url 'peta' %}" class="navbar-brand" aria-label="Beranda">
+                <span class="brand-flag">🇮🇩</span>
+                <span class="brand-name">DATA<span>.ID</span></span>
+            </a>
 
-    <ul class="nav-links" id="navLinks">
-      <li><a href="{% url 'peta' %}" class="active" id="nav-peta">Peta</a></li>
-      <li><a href="#" id="nav-data">Data</a></li>
-      <li><a href="#" id="nav-wilayah">Wilayah</a></li>
-      <li><a href="#" id="nav-variabel">Variabel</a></li>
-      <li><a href="/admin/" id="nav-admin">Admin</a></li>
-    </ul>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="{% url 'peta' %}" class="active" id="nav-peta">Peta</a></li>
+                <li><a href="#" id="nav-data">Data</a></li>
+                <li><a href="#" id="nav-wilayah">Wilayah</a></li>
+                <li><a href="#" id="nav-variabel">Variabel</a></li>
+                <li><a href="/admin/" id="nav-admin">Admin</a></li>
+            </ul>
 
-    <div class="nav-filter">
-      <label for="tipeSelect">Tingkat:</label>
-      <select id="tipeSelect" onchange="gantiTipe(this.value)">
-        <option value="Provinsi" {% if tipe_aktif == 'Provinsi' %}selected{% endif %}>Provinsi</option>
-        <option value="Kabupaten" {% if tipe_aktif == 'Kabupaten' %}selected{% endif %}>Kabupaten</option>
-        <option value="Kota" {% if tipe_aktif == 'Kota' %}selected{% endif %}>Kota</option>
-      </select>
-    </div>
-
-    <button class="hamburger" id="hamburgerBtn" aria-label="Buka menu" onclick="toggleNav()">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</nav>
-
-<!-- ── HERO STRIP ────────────────────────────────────────── -->
-<div class="hero-strip">
-  <div class="hero-strip-inner">
-    <div>
-      <h1>Portal Data Wilayah & Fiskal Indonesia</h1>
-      <p>Klik wilayah pada peta untuk melihat data variabel dan tren historis</p>
-    </div>
-    <div class="stat-chips">
-      <div class="chip"><span>{{ wilayah_list|length }}</span> Wilayah</div>
-      <div class="chip"><span>{{ variabel_list|length }}</span> Variabel</div>
-      <div class="chip"><span>{{ tahun_list|length }}</span> Tahun Data</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── CONTENT ───────────────────────────────────────────── -->
-<main>
-  <div class="content-area">
-
-    <!-- MAP CARD -->
-    <div class="map-card">
-      <div class="map-card-header">
-        <h2>Peta {{ tipe_aktif }} Indonesia</h2>
-        <span class="map-hint">💡 Klik wilayah untuk melihat data</span>
-      </div>
-      <div id="map" role="main" aria-label="Peta interaktif Indonesia"></div>
-    </div>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar" aria-label="Panel data wilayah">
-
-      <!-- Info Wilayah -->
-      <div class="info-card" id="cardWilayah">
-        <div class="info-card-head">📊 Data Wilayah</div>
-        <div class="info-card-body">
-
-          <!-- Placeholder -->
-          <div class="placeholder-box" id="placeholderWilayah">
-            <div class="ico">🗺️</div>
-            <p>Klik salah satu wilayah<br>pada peta untuk menampilkan<br>data variabelnya</p>
-          </div>
-
-          <!-- Isi data -->
-          <div class="wilayah-info" id="wilayahInfo">
-            <div class="wilayah-name" id="wNama">—</div>
-            <div class="wilayah-badge" id="wBadge">—</div>
-
-            <!-- Filter tahun -->
-            <div class="tahun-filter" id="tahunFilter"></div>
-
-            <!-- Tabel data -->
-            <table class="data-table" id="dataTable">
-              <thead>
-                <tr>
-                  <th>Variabel</th>
-                  <th style="text-align:right">Nilai</th>
-                </tr>
-              </thead>
-              <tbody id="dataTableBody">
-                <tr><td colspan="2" class="loading-row">Memuat…</td></tr>
-              </tbody>
-            </table>
-
-            <!-- Quick stats -->
-            <div class="quick-stats" id="quickStats" style="display:none">
-              <div class="stat-box">
-                <div class="stat-val" id="statJmlVar">—</div>
-                <div class="stat-lbl">Variabel</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-val" id="statTahun">—</div>
-                <div class="stat-lbl">Tahun Data</div>
-              </div>
+            <div class="nav-filter">
+                <label for="tipeSelect">Tingkat:</label>
+                <select id="tipeSelect" onchange="gantiTipe(this.value)">
+                    <option value="Provinsi">Provinsi</option>
+                    <option value="Kabupaten">Kabupaten</option>
+                    <option value="Kota">Kota</option>
+                </select>
             </div>
-          </div>
+
+            <button class="hamburger" id="hamburgerBtn" aria-label="Buka menu" onclick="toggleNav()">
+                <span></span><span></span><span></span>
+            </button>
         </div>
-      </div>
+    </nav>
 
-      <!-- Legend -->
-      <div class="info-card legend-card">
-        <div class="info-card-head">🎨 Legenda</div>
-        <div class="info-card-body">
-          <div class="legend-item"><div class="legend-dot" style="background:#1a4f8a"></div>Wilayah terpilih</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;opacity:.5"></div>Wilayah — hover</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#dde1e7;border:1px solid #999"></div>Wilayah normal</div>
-          <div class="legend-item" style="margin-top:.5rem;font-size:.75rem;color:#667085">
-            ⚠️ Wilayah abu-abu berarti kolom <code>geom</code> belum terisi. Isi melalui Admin atau import GeoJSON.
-          </div>
+    <!-- ── HERO STRIP ────────────────────────────────────────── -->
+    <div class="hero-strip">
+        <div class="hero-strip-inner">
+            <div>
+                <h1>Portal Data Wilayah & Fiskal Indonesia</h1>
+                <p>Klik wilayah pada peta untuk melihat data variabel dan tren historis</p>
+            </div>
+            <div class="stat-chips">
+                <div class="chip"><span>{{ wilayah_list|length }}</span> Wilayah</div>
+                <div class="chip"><span>{{ variabel_list|length }}</span> Variabel</div>
+                <div class="chip"><span>{{ tahun_list|length }}</span> Tahun Data</div>
+            </div>
         </div>
-      </div>
-
-      <!-- Daftar Wilayah -->
-      <div class="info-card">
-        <div class="info-card-head">📋 Daftar Wilayah</div>
-        <div class="info-card-body" style="max-height:220px;overflow-y:auto;padding:.5rem">
-          {% for w in wilayah_list %}
-          <div
-            id="item-{{ w.id }}"
-            onclick="pilihWilayahDariList('{{ w.id }}', '{{ w.nama_wilayah }}', '{{ w.tipe_wilayah }}', '{{ w.kode_wilayah }}')"
-            style="padding:.45rem .6rem;border-radius:6px;cursor:pointer;font-size:.82rem;transition:background .15s;margin-bottom:2px;"
-            onmouseover="this.style.background='#f4f6f9'"
-            onmouseout="this.style.background=''"
-          >
-            <span style="font-weight:500">{{ w.nama_wilayah }}</span>
-            <span style="color:#667085;font-size:.72rem;margin-left:.4rem">{{ w.kode_wilayah }}</span>
-          </div>
-          {% empty %}
-          <p style="font-size:.82rem;color:#667085;padding:.5rem">Belum ada wilayah dengan tipe ini.</p>
-          {% endfor %}
-        </div>
-      </div>
-
-    </aside>
-  </div>
-</main>
-
-<!-- ── FOOTER ─────────────────────────────────────────────── -->
-<footer>
-  <div class="footer-top">
-    <div class="footer-top-inner">
-      <div class="footer-brand">
-        <span style="font-size:1.4rem">🇮🇩</span>
-        <span class="footer-brand-name">DATA<span>.ID</span></span>
-      </div>
-      <ul class="footer-top-links">
-        <li><a href="#">Tentang</a></li>
-        <li class="footer-sep">|</li>
-        <li><a href="#">Kebijakan Data</a></li>
-        <li class="footer-sep">|</li>
-        <li><a href="#">Panduan Pengguna</a></li>
-        <li class="footer-sep">|</li>
-        <li><a href="/admin/">Admin</a></li>
-      </ul>
     </div>
-  </div>
 
-  <div class="footer-bot">
-    <div class="footer-bot-inner">
-      <div class="footer-org">
-        <div class="footer-org-icon">BPS</div>
-        <p>
-          Portal Data Wilayah Indonesia.<br>
-          Data bersumber dari <a href="https://www.bps.go.id" target="_blank" rel="noopener">Badan Pusat Statistik (BPS)</a>
-          dan sumber resmi Pemerintah Indonesia lainnya.
-        </p>
-      </div>
-      <div class="footer-links-grid">
-        <a href="#">Tentang Aplikasi</a>
-        <a href="#">Aksesibilitas</a>
-        <a href="#">Kebijakan Privasi</a>
-        <a href="#">Laporan Kinerja</a>
-        <a href="#">Kontak</a>
-        <a href="/admin/">Panel Admin</a>
-      </div>
-      <div class="footer-copy">
-        &copy; {% now "Y" %} Portal Data Indonesia.
-        Dibuat dengan Django &amp; GeoDjango &mdash;
-        <a href="https://www.djangoproject.com" target="_blank" rel="noopener">djangoproject.com</a>
-      </div>
-    </div>
-  </div>
-</footer>
+    <!-- ── CONTENT ───────────────────────────────────────────── -->
+    <main>
+        <div class="content-area">
 
-<!-- ── SCRIPTS ────────────────────────────────────────────── -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  // ── DATA DARI DJANGO ──
-  const WILAYAH_DATA_URL = "{% url 'data-wilayah' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', '');
-  const TAHUN_LIST = {{ tahun_list|safe }};
+            <!-- MAP CARD -->
+            <div class="map-card">
+                <div class="map-card-header">
+                    <h2>Peta {{ tipe_aktif }} Indonesia</h2>
+                    <span class="map-hint">💡 Klik wilayah untuk melihat data</span>
+                </div>
+                <div id="map" role="main" aria-label="Peta interaktif Indonesia"></div>
+            </div>
 
-  // ── INISIALISASI PETA ──
-  const map = L.map('map', {
-    center: [-2.5, 118],
-    zoom: 5,
-    minZoom: 4,
-    maxZoom: 12,
-  });
+            <!-- SIDEBAR -->
+            <aside class="sidebar" aria-label="Panel data wilayah">
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
-    maxZoom: 18,
-  }).addTo(map);
+                <!-- Info Wilayah -->
+                <div class="info-card" id="cardWilayah">
+                    <div class="info-card-head">📊 Data Wilayah</div>
+                    <div class="info-card-body">
 
-  // ── STATE ──
-  let selectedLayer = null;
-  let activeWilayahId = null;
-  let activeTahun = TAHUN_LIST.length ? TAHUN_LIST[TAHUN_LIST.length - 1] : null;
+                        <!-- Placeholder -->
+                        <div class="placeholder-box" id="placeholderWilayah">
+                            <div class="ico">🗺️</div>
+                            <p>Klik salah satu wilayah<br>pada peta untuk menampilkan<br>data variabelnya</p>
+                        </div>
 
-  // ── STYLE POLYGON ──
-  function styleDefault(feature) {
-    return { color: '#888', weight: 1, fillColor: '#c8d8ed', fillOpacity: .55 };
-  }
-  function styleHover(layer) {
-    layer.setStyle({ fillColor: '#3b82f6', fillOpacity: .65, weight: 2 });
-  }
-  function styleSelected(layer) {
-    layer.setStyle({ fillColor: '#1a4f8a', fillOpacity: .8, weight: 2.5, color: '#0d3665' });
-  }
-  function styleReset(layer) {
-    if (layer !== selectedLayer) geojsonLayer && geojsonLayer.resetStyle(layer);
-  }
+                        <!-- Isi data -->
+                        <div class="wilayah-info" id="wilayahInfo">
+                            <div class="wilayah-name" id="wNama">—</div>
+                            <div class="wilayah-badge" id="wBadge">—</div>
 
-  // ── GEOJSON LAYER ──
-  let geojsonLayer = null;
+                            <!-- Filter tahun -->
+                            <div class="tahun-filter" id="tahunFilter"></div>
 
-  // Karena geom disimpan di DB, kita fetch GeoJSON dari AJAX view
-  // Namun jika geom masih kosong, fallback ke pesan info di peta
-  function loadGeoJSON() {
-    fetch("{% url 'wilayah-list' %}?tipe={{ tipe_aktif }}")
-      .then(r => r.json())
-      .then(data => {
-        if (!data.geojson || !data.geojson.features || data.geojson.features.length === 0) {
-          L.popup()
-            .setLatLng([-2.5, 118])
-            .setContent('<b>Belum ada data geometri (geom).</b><br>Isi kolom geom melalui Admin atau import GeoJSON BPS.')
-            .openOn(map);
-          return;
+                            <!-- Tabel data -->
+                            <table class="data-table" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>Variabel</th>
+                                        <th style="text-align:right">Nilai</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody">
+                                    <tr>
+                                        <td colspan="2" class="loading-row">Memuat…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Quick stats -->
+                            <div class="quick-stats" id="quickStats" style="display:none">
+                                <div class="stat-box">
+                                    <div class="stat-val" id="statJmlVar">—</div>
+                                    <div class="stat-lbl">Variabel</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-val" id="statTahun">—</div>
+                                    <div class="stat-lbl">Tahun Data</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="info-card legend-card">
+                    <div class="info-card-head">🎨 Legenda</div>
+                    <div class="info-card-body">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#1a4f8a"></div>Wilayah terpilih
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#3b82f6;opacity:.5"></div>Wilayah — hover
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background:#dde1e7;border:1px solid #999"></div>Wilayah
+                            normal
+                        </div>
+                        <div class="legend-item" style="margin-top:.5rem;font-size:.75rem;color:#667085">
+                            ⚠️ Wilayah abu-abu berarti kolom <code>geom</code> belum terisi. Isi melalui Admin atau
+                            import GeoJSON.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Wilayah -->
+                <div class="info-card">
+                    <div class="info-card-head">📋 Daftar Wilayah</div>
+                    <div class="info-card-body" style="max-height:220px;overflow-y:auto;padding:.5rem">
+                        {% for w in wilayah_list %}
+                        <div id="item-{{ w.id }}"
+                            onclick="pilihWilayahDariList('{{ w.id }}', '{{ w.nama_wilayah }}', '{{ w.tipe_wilayah }}', '{{ w.kode_wilayah }}')"
+                            style="padding:.45rem .6rem;border-radius:6px;cursor:pointer;font-size:.82rem;transition:background .15s;margin-bottom:2px;"
+                            onmouseover="this.style.background='#f4f6f9'" onmouseout="this.style.background=''">
+                            <span style="font-weight:500">{{ w.nama_wilayah }}</span>
+                            <span style="color:#667085;font-size:.72rem;margin-left:.4rem">{{ w.kode_wilayah }}</span>
+                        </div>
+                        {% empty %}
+                        <p style="font-size:.82rem;color:#667085;padding:.5rem">Belum ada wilayah dengan tipe ini.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </aside>
+        </div>
+    </main>
+
+    <!-- ── CHART SECTION ──────────────────────────────── -->
+    <section class="chart-section" id="chartSection" aria-label="Grafik Perbandingan Data">
+        <div class="chart-card">
+            <!-- Header -->
+            <div class="chart-card-header">
+                <h3>📈 Grafik Perbandingan Data Wilayah</h3>
+                <div class="chart-header-controls" id="chartHeaderControls">
+                    <button class="chart-type-btn active" id="btnBar" onclick="setChartType('bar')">📊 Bar</button>
+                    <button class="chart-type-btn" id="btnLine" onclick="setChartType('line')">📉 Tren</button>
+                    <select class="chart-select" id="chartTahunSelect" onchange="onChartTahunChange()"></select>
+                </div>
+            </div>
+            <!-- Body: sidebar kiri + canvas kanan -->
+            <div class="chart-body">
+                <!-- Panel kiri -->
+                <div class="chart-sidebar">
+                    <!-- Wilayah aktif -->
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">🗺️ Wilayah Aktif</div>
+                        <div class="wilayah-chips" id="wilayahChips"></div>
+                        <p class="chart-hint" id="chipHint">Klik wilayah pada peta untuk menambahkan (maks. 5)</p>
+                    </div>
+                    <!-- Variabel -->
+                    <div class="chart-panel">
+                        <div class="chart-panel-title">📋 Variabel</div>
+                        <div class="var-list" id="varList">
+                            <p class="chart-hint">Pilih wilayah untuk melihat variabel</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Area chart -->
+                <div class="chart-area">
+                    <div class="chart-placeholder" id="chartPlaceholder">
+                        <div class="chart-ico">📊</div>
+                        <p>Klik wilayah pada peta<br>untuk mulai membandingkan data</p>
+                    </div>
+                    <div class="chart-canvas-wrap" id="chartCanvasWrap" style="display:none">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────── -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-top-inner">
+                <div class="footer-brand">
+                    <span style="font-size:1.4rem">🇮🇩</span>
+                    <span class="footer-brand-name">DATA<span>.ID</span></span>
+                </div>
+                <ul class="footer-top-links">
+                    <li><a href="#">Tentang</a></li>
+                    <li class="footer-sep">|</li>
+                    <li><a href="#">Kebijakan Data</a></li>
+                    <li class="footer-sep">|</li>
+                    <li><a href="#">Panduan Pengguna</a></li>
+                    <li class="footer-sep">|</li>
+                    <li><a href="/admin/">Admin</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bot">
+            <div class="footer-bot-inner">
+                <div class="footer-org">
+                    <div class="footer-org-icon">BPS</div>
+                    <p>
+                        Portal Data Wilayah Indonesia.<br>
+                        Data bersumber dari <a href="https://www.bps.go.id" target="_blank" rel="noopener">Badan Pusat
+                            Statistik (BPS)</a>
+                        dan sumber resmi Pemerintah Indonesia lainnya.
+                    </p>
+                </div>
+                <div class="footer-links-grid">
+                    <a href="#">Tentang Aplikasi</a>
+                    <a href="#">Aksesibilitas</a>
+                    <a href="#">Kebijakan Privasi</a>
+                    <a href="#">Laporan Kinerja</a>
+                    <a href="#">Kontak</a>
+                    <a href="/admin/">Panel Admin</a>
+                </div>
+                <div class="footer-copy">
+                    &copy; {% now "Y" %} Portal Data Indonesia.
+                    Dibuat dengan Django &amp; GeoDjango &mdash;
+                    <a href="https://www.djangoproject.com" target="_blank" rel="noopener">djangoproject.com</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ── SCRIPTS ────────────────────────────────────────────── -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // ── CHART MODULE (multi-wilayah + multi-variabel) ──
+        let chartInstance = null;
+        let chartMode = 'bar';       // 'bar' | 'line'
+        let chartActiveTahun = null;
+
+        // { id: { nama, color, data: { tahun: [{variabel,nilai}] } } }
+        const chartDataByWilayah = {};
+
+        // Set id wilayah yang aktif di chart
+        const activeWilayahIds = [];
+
+        // Set variabel yang dicentang
+        let activeVars = new Set();
+
+        // Semua tahun & variabel yang tersedia (union dari semua wilayah)
+        let allTahunList = [];
+        let allVarList = [];
+
+        const CHART_COLORS = [
+            '#1a4f8a', '#e63946', '#2a9d8f', '#f4a261', '#8b5cf6',
+            '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899'
+        ];
+
+        function wilayahColor(id) {
+            const idx = activeWilayahIds.indexOf(id);
+            return CHART_COLORS[idx >= 0 ? idx : 0];
         }
-        geojsonLayer = L.geoJSON(data.geojson, {
-          style: styleDefault,
-          onEachFeature: (feature, layer) => {
-            const p = feature.properties;
-            layer.bindTooltip(p.nama_wilayah, { sticky: true, className: 'leaflet-tooltip' });
-            layer.on({
-              mouseover: e => { styleHover(e.target); },
-              mouseout:  e => { styleReset(e.target); },
-              click:     e => {
-                if (selectedLayer) styleReset(selectedLayer);
-                selectedLayer = e.target;
-                styleSelected(e.target);
-                tampilkanDataWilayah(p.id, p.nama_wilayah, p.tipe_wilayah, p.kode_wilayah);
-              }
+
+        function setChartType(type) {
+            chartMode = type;
+            document.getElementById('btnBar').classList.toggle('active', type === 'bar');
+            document.getElementById('btnLine').classList.toggle('active', type === 'line');
+            document.getElementById('chartTahunSelect').style.display = type === 'bar' ? '' : 'none';
+            renderChart();
+        }
+
+        function onChartTahunChange() {
+            chartActiveTahun = document.getElementById('chartTahunSelect').value;
+            renderChart();
+        }
+
+        // -- Fetch data 1 wilayah (semua tahun paralel) --
+        async function fetchWilayahData(id, nama) {
+            if (chartDataByWilayah[id]) return; // sudah ada, skip
+            const fetches = TAHUN_LIST.map(t =>
+                fetch(`/data/wilayah/${id}/?tahun=${t}`)
+                    .then(r => r.json())
+                    .then(json => ({ tahun: t, rows: json.data || [] }))
+                    .catch(() => ({ tahun: t, rows: [] }))
+            );
+            const results = await Promise.all(fetches);
+            const byTahun = {};
+            results.forEach(({ tahun, rows }) => { if (rows.length) byTahun[tahun] = rows; });
+            chartDataByWilayah[id] = { nama, data: byTahun };
+        }
+
+        async function addWilayahToChart(id, nama) {
+            if (activeWilayahIds.length >= 5 && !activeWilayahIds.includes(id)) {
+                alert('Maksimal 5 wilayah untuk perbandingan.');
+                return;
+            }
+            if (!activeWilayahIds.includes(id)) activeWilayahIds.push(id);
+
+            await fetchWilayahData(id, nama);
+            rebuildUnionLists();
+            renderWilayahChips();
+            renderVarList();
+            updateTahunSelector();
+            showChartCanvas();
+            renderChart();
+        }
+
+        function removeWilayah(id) {
+            const idx = activeWilayahIds.indexOf(id);
+            if (idx >= 0) activeWilayahIds.splice(idx, 1);
+            delete chartDataByWilayah[id];
+            rebuildUnionLists();
+            renderWilayahChips();
+            renderVarList();
+            updateTahunSelector();
+            if (activeWilayahIds.length === 0) {
+                showChartPlaceholder();
+            } else {
+                renderChart();
+            }
+        }
+
+        function rebuildUnionLists() {
+            const tahunSet = new Set();
+            const varSet = new Set();
+            activeWilayahIds.forEach(id => {
+                const d = chartDataByWilayah[id];
+                if (!d) return;
+                Object.entries(d.data).forEach(([t, rows]) => {
+                    tahunSet.add(t);
+                    rows.forEach(r => varSet.add(r.variabel));
+                });
             });
-          }
-        }).addTo(map);
-        try { map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] }); } catch(e) {}
-      })
-      .catch(() => {
-        console.warn('GeoJSON tidak dapat dimuat');
-      });
-  }
-
-  loadGeoJSON();
-
-  // ── TAMPILKAN DATA WILAYAH ──
-  function tampilkanDataWilayah(id, nama, tipe, kode) {
-    activeWilayahId = id;
-    document.getElementById('placeholderWilayah').style.display = 'none';
-    document.getElementById('wilayahInfo').style.display = 'block';
-    document.getElementById('wNama').textContent = nama;
-    document.getElementById('wBadge').textContent = tipe + (kode ? ' · ' + kode : '');
-
-    // render tombol tahun
-    const tf = document.getElementById('tahunFilter');
-    tf.innerHTML = '';
-    TAHUN_LIST.forEach(t => {
-      const btn = document.createElement('button');
-      btn.className = 'tahun-btn' + (t == activeTahun ? ' active' : '');
-      btn.textContent = t;
-      btn.onclick = () => {
-        document.querySelectorAll('.tahun-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeTahun = t;
-        muatData(id, t);
-      };
-      tf.appendChild(btn);
-    });
-
-    // highlight list sidebar
-    document.querySelectorAll('[id^="item-"]').forEach(el => el.style.background = '');
-    const item = document.getElementById('item-' + id);
-    if (item) { item.style.background = '#e8f0fe'; item.scrollIntoView({ block: 'nearest' }); }
-
-    muatData(id, activeTahun);
-  }
-
-  function muatData(id, tahun) {
-    const tbody = document.getElementById('dataTableBody');
-    tbody.innerHTML = '<tr><td colspan="2" class="loading-row">⏳ Memuat data…</td></tr>';
-    document.getElementById('quickStats').style.display = 'none';
-
-    const url = `/data/wilayah/${id}/` + (tahun ? `?tahun=${tahun}` : '');
-    fetch(url)
-      .then(r => r.json())
-      .then(json => {
-        const rows = json.data;
-        if (!rows || rows.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="2" class="loading-row">Tidak ada data untuk tahun ini</td></tr>';
-          return;
+            allTahunList = [...tahunSet].sort();
+            allVarList = [...varSet];
+            // jaaga activeVars: hapus yang sudah tidak ada
+            activeVars = new Set([...activeVars].filter(v => varSet.has(v)));
+            // kalau belum ada pilihan, centang semua
+            if (activeVars.size === 0) allVarList.forEach(v => activeVars.add(v));
+            if (!chartActiveTahun || !tahunSet.has(chartActiveTahun))
+                chartActiveTahun = allTahunList[allTahunList.length - 1] || null;
         }
-        tbody.innerHTML = rows.map(r => `
+
+        function renderWilayahChips() {
+            const el = document.getElementById('wilayahChips');
+            if (activeWilayahIds.length === 0) {
+                el.innerHTML = '';
+                return;
+            }
+            el.innerHTML = activeWilayahIds.map(id => {
+                const d = chartDataByWilayah[id];
+                const nama = d ? d.nama : id;
+                const color = wilayahColor(id);
+                return `<div class="w-chip" style="background:${color}">
+                    <span class="w-chip-name">${nama}</span>
+                    <button class="w-chip-remove" onclick="removeWilayah('${id}')" title="Hapus">×</button>
+                </div>`;
+            }).join('');
+        }
+
+        function renderVarList() {
+            const el = document.getElementById('varList');
+            if (allVarList.length === 0) {
+                el.innerHTML = '<p class="chart-hint">Pilih wilayah untuk melihat variabel</p>';
+                return;
+            }
+            el.innerHTML = allVarList.map(v => {
+                const checked = activeVars.has(v) ? 'checked' : '';
+                const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
+                return `<div class="var-item" onclick="toggleVar('${v}')">
+                    <input type="checkbox" id="${safeId}" ${checked} onclick="event.stopPropagation();toggleVar('${v}')">
+                    <label for="${safeId}">${v}</label>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleVar(v) {
+            if (activeVars.has(v)) {
+                if (activeVars.size === 1) return; // minimal 1 dipilih
+                activeVars.delete(v);
+            } else {
+                activeVars.add(v);
+            }
+            // sync checkbox state
+            const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
+            const cb = document.getElementById(safeId);
+            if (cb) cb.checked = activeVars.has(v);
+            renderChart();
+        }
+
+        function updateTahunSelector() {
+            const sel = document.getElementById('chartTahunSelect');
+            sel.innerHTML = allTahunList.map(t => `<option value="${t}">${t}</option>`).join('');
+            if (chartActiveTahun) sel.value = chartActiveTahun;
+        }
+
+        function showChartCanvas() {
+            document.getElementById('chartPlaceholder').style.display = 'none';
+            document.getElementById('chartCanvasWrap').style.display = 'block';
+        }
+
+        function showChartPlaceholder() {
+            document.getElementById('chartPlaceholder').style.display = '';
+            document.getElementById('chartCanvasWrap').style.display = 'none';
+            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+        }
+
+        function renderChart() {
+            if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+            if (activeWilayahIds.length === 0 || activeVars.size === 0) return;
+
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const selectedVars = allVarList.filter(v => activeVars.has(v));
+
+            const commonOpts = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 14, padding: 12 } },
+                    tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${formatAngka(c.raw)}` } }
+                },
+                scales: {
+                    x: { ticks: { font: { size: 11 }, maxRotation: 30 } },
+                    y: { ticks: { font: { size: 11 }, callback: v => formatAngka(v) } }
+                }
+            };
+
+            if (chartMode === 'bar') {
+                // X = variabel terpilih, setiap wilayah = 1 dataset (grouped bar)
+                const labels = selectedVars;
+                const datasets = activeWilayahIds.map(id => {
+                    const d = chartDataByWilayah[id];
+                    const color = wilayahColor(id);
+                    const rows = d && d.data[chartActiveTahun] ? d.data[chartActiveTahun] : [];
+                    return {
+                        label: d ? d.nama : id,
+                        data: selectedVars.map(v => { const r = rows.find(x => x.variabel === v); return r ? r.nilai : null; }),
+                        backgroundColor: color + 'bb',
+                        borderColor: color,
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                    };
+                });
+                chartInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets }, options: commonOpts });
+
+            } else {
+                // X = tahun, setiap kombinasi (wilayah x variabel) = 1 garis
+                const labels = allTahunList;
+                const dashPatterns = [[0,0],[6,3],[3,3],[6,3,2,3]];
+                const datasets = [];
+                let dsIdx = 0;
+                activeWilayahIds.forEach((id, wi) => {
+                    const d = chartDataByWilayah[id];
+                    if (!d) return;
+                    selectedVars.forEach((v, vi) => {
+                        const baseColor = CHART_COLORS[wi % CHART_COLORS.length];
+                        // lighten slightly per variable
+                        const alpha = 1 - vi * 0.2;
+                        datasets.push({
+                            label: `${d.nama} — ${v}`,
+                            data: labels.map(t => {
+                                const rows = d.data[t] || [];
+                                const r = rows.find(x => x.variabel === v);
+                                return r ? r.nilai : null;
+                            }),
+                            borderColor: baseColor,
+                            backgroundColor: baseColor + '18',
+                            borderWidth: 2,
+                            borderDash: dashPatterns[vi % dashPatterns.length],
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: false,
+                            tension: 0.3,
+                            spanGaps: true,
+                        });
+                        dsIdx++;
+                    });
+                });
+                chartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: commonOpts });
+            }
+        }
+    </script>
+    <script>
+        // ── DATA DARI DJANGO ──
+        const WILAYAH_DATA_URL = "{% url 'data-wilayah' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', '');
+        const TAHUN_LIST = {{ tahun_list| safe }};
+
+        // ── INISIALISASI PETA ──
+        const map = L.map('map', {
+            center: [-2.5, 118],
+            zoom: 5,
+            minZoom: 4,
+            maxZoom: 12,
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+            maxZoom: 18,
+        }).addTo(map);
+
+        // ── STATE ──
+        let selectedLayer = null;
+        let activeWilayahId = null;
+        let activeTahun = TAHUN_LIST.length ? TAHUN_LIST[TAHUN_LIST.length - 1] : null;
+
+        // ── STYLE POLYGON ──
+        function styleDefault(feature) {
+            return { color: '#888', weight: 1, fillColor: '#c8d8ed', fillOpacity: .55 };
+        }
+        function styleHover(layer) {
+            layer.setStyle({ fillColor: '#3b82f6', fillOpacity: .65, weight: 2 });
+        }
+        function styleSelected(layer) {
+            layer.setStyle({ fillColor: '#1a4f8a', fillOpacity: .8, weight: 2.5, color: '#0d3665' });
+        }
+        function styleReset(layer) {
+            if (layer !== selectedLayer) geojsonLayer && geojsonLayer.resetStyle(layer);
+        }
+
+        // ── GEOJSON LAYER ──
+        let geojsonLayer = null;
+
+        // Karena geom disimpan di DB, kita fetch GeoJSON dari AJAX view
+        // Namun jika geom masih kosong, fallback ke pesan info di peta
+        function loadGeoJSON() {
+            fetch("{% url 'wilayah-list' %}?tipe={{ tipe_aktif }}")
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.geojson || !data.geojson.features || data.geojson.features.length === 0) {
+                        L.popup()
+                            .setLatLng([-2.5, 118])
+                            .setContent('<b>Belum ada data geometri (geom).</b><br>Isi kolom geom melalui Admin atau import GeoJSON BPS.')
+                            .openOn(map);
+                        return;
+                    }
+                    geojsonLayer = L.geoJSON(data.geojson, {
+                        style: styleDefault,
+                        onEachFeature: (feature, layer) => {
+                            const p = feature.properties;
+                            layer.bindTooltip(p.nama_wilayah, { sticky: true, className: 'leaflet-tooltip' });
+                            layer.on({
+                                mouseover: e => { styleHover(e.target); },
+                                mouseout: e => { styleReset(e.target); },
+                                click: e => {
+                                    if (selectedLayer) styleReset(selectedLayer);
+                                    selectedLayer = e.target;
+                                    styleSelected(e.target);
+                                    tampilkanDataWilayah(p.id, p.nama_wilayah, p.tipe_wilayah, p.kode_wilayah);
+                                }
+                            });
+                        }
+                    }).addTo(map);
+                    try { map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] }); } catch (e) { }
+                })
+                .catch(() => {
+                    console.warn('GeoJSON tidak dapat dimuat');
+                });
+        }
+
+        loadGeoJSON();
+
+        // ── TAMPILKAN DATA WILAYAH ──
+        function tampilkanDataWilayah(id, nama, tipe, kode) {
+            activeWilayahId = id;
+            document.getElementById('placeholderWilayah').style.display = 'none';
+            document.getElementById('wilayahInfo').style.display = 'block';
+            // Tambahkan ke chart comparison
+            addWilayahToChart(id, nama);
+            document.getElementById('wNama').textContent = nama;
+            document.getElementById('wBadge').textContent = tipe + (kode ? ' · ' + kode : '');
+
+            // render tombol tahun
+            const tf = document.getElementById('tahunFilter');
+            tf.innerHTML = '';
+            TAHUN_LIST.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'tahun-btn' + (t == activeTahun ? ' active' : '');
+                btn.textContent = t;
+                btn.onclick = () => {
+                    document.querySelectorAll('.tahun-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeTahun = t;
+                    muatData(id, t);
+                };
+                tf.appendChild(btn);
+            });
+
+            // highlight list sidebar
+            document.querySelectorAll('[id^="item-"]').forEach(el => el.style.background = '');
+            const item = document.getElementById('item-' + id);
+            if (item) { item.style.background = '#e8f0fe'; item.scrollIntoView({ block: 'nearest' }); }
+
+            muatData(id, activeTahun);
+        }
+
+        function muatData(id, tahun) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '<tr><td colspan="2" class="loading-row">⏳ Memuat data…</td></tr>';
+            document.getElementById('quickStats').style.display = 'none';
+
+            const url = `/data/wilayah/${id}/` + (tahun ? `?tahun=${tahun}` : '');
+            fetch(url)
+                .then(r => r.json())
+                .then(json => {
+                    const rows = json.data;
+                    if (!rows || rows.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="2" class="loading-row">Tidak ada data untuk tahun ini</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = rows.map(r => `
           <tr>
             <td>
               <div class="variabel-name">${r.variabel}</div>
@@ -837,54 +1608,62 @@
           </tr>
         `).join('');
 
-        // quick stats
-        const varUnik = [...new Set(rows.map(r => r.variabel))].length;
-        const tahunUnik = [...new Set(rows.map(r => r.tahun))].length;
-        document.getElementById('statJmlVar').textContent = varUnik;
-        document.getElementById('statTahun').textContent = tahunUnik;
-        document.getElementById('quickStats').style.display = 'grid';
-      })
-      .catch(() => {
-        tbody.innerHTML = '<tr><td colspan="2" class="loading-row">Gagal memuat data</td></tr>';
-      });
-  }
-
-  // ── PILIH DARI LIST SIDEBAR ──
-  function pilihWilayahDariList(id, nama, tipe, kode) {
-    tampilkanDataWilayah(id, nama, tipe, kode);
-    // zoom ke wilayah jika geojsonLayer ada
-    if (geojsonLayer) {
-      geojsonLayer.eachLayer(layer => {
-        if (layer.feature && layer.feature.properties.id === id) {
-          try { map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 10 }); } catch(e) {}
-          if (selectedLayer) styleReset(selectedLayer);
-          selectedLayer = layer;
-          styleSelected(layer);
+                    // quick stats
+                    const varUnik = [...new Set(rows.map(r => r.variabel))].length;
+                    const tahunUnik = [...new Set(rows.map(r => r.tahun))].length;
+                    document.getElementById('statJmlVar').textContent = varUnik;
+                    document.getElementById('statTahun').textContent = tahunUnik;
+                    document.getElementById('quickStats').style.display = 'grid';
+                })
+                .catch(() => {
+                    tbody.innerHTML = '<tr><td colspan="2" class="loading-row">Gagal memuat data</td></tr>';
+                });
         }
-      });
-    }
-  }
 
-  // ── GANTI TIPE WILAYAH ──
-  function gantiTipe(tipe) {
-    window.location.href = '/?tipe=' + tipe;
-  }
+        // ── PILIH DARI LIST SIDEBAR ──
+        function pilihWilayahDariList(id, nama, tipe, kode) {
+            tampilkanDataWilayah(id, nama, tipe, kode);
+            // zoom ke wilayah jika geojsonLayer ada
+            if (geojsonLayer) {
+                geojsonLayer.eachLayer(layer => {
+                    if (layer.feature && layer.feature.properties.id === id) {
+                        try { map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 10 }); } catch (e) { }
+                        if (selectedLayer) styleReset(selectedLayer);
+                        selectedLayer = layer;
+                        styleSelected(layer);
+                    }
+                });
+            }
+        }
 
-  // ── HAMBURGER ──
-  function toggleNav() {
-    document.getElementById('navLinks').classList.toggle('open');
-  }
+        // ── GANTI TIPE WILAYAH ──
+        function gantiTipe(tipe) {
+            window.location.href = '/?tipe=' + tipe;
+        }
 
-  // ── FORMAT ANGKA ──
-  function formatAngka(n) {
-    if (n === null || n === undefined) return '—';
-    if (n >= 1e12) return (n/1e12).toFixed(2) + ' T';
-    if (n >= 1e9)  return (n/1e9).toFixed(2) + ' M';
-    if (n >= 1e6)  return (n/1e6).toFixed(2) + ' Jt';
-    return new Intl.NumberFormat('id-ID').format(n);
-  }
-</script>
+        // Set dropdown sesuai URL param (Prettier-proof, tanpa Django template tag di HTML attr)
+        (function () {
+            const tipe = new URLSearchParams(window.location.search).get('tipe') || 'Provinsi';
+            const sel = document.getElementById('tipeSelect');
+            if (sel) sel.value = tipe;
+        })();
 
-{% block extra_scripts %}{% endblock %}
+        // ── HAMBURGER ──
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('open');
+        }
+
+        // ── FORMAT ANGKA ──
+        function formatAngka(n) {
+            if (n === null || n === undefined) return '—';
+            if (n >= 1e12) return (n / 1e12).toFixed(2) + ' T';
+            if (n >= 1e9) return (n / 1e9).toFixed(2) + ' M';
+            if (n >= 1e6) return (n / 1e6).toFixed(2) + ' Jt';
+            return new Intl.NumberFormat('id-ID').format(n);
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
+
 </html>

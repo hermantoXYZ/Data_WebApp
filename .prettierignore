@@ -1,0 +1,3 @@
+# Jangan format template Django — Prettier tidak mengerti sintaks {% %} dan {{ }}
+# sehingga bisa merusak operator seperti {% if x == 'y' %} → {% if x=='y' %}
+templates/
