@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# GeoDjango: path ke library GDAL dan GEOS (terinstall via brew install gdal geos)
+GDAL_LIBRARY_PATH = '/opt/homebrew/lib/libgdal.dylib'
+GEOS_LIBRARY_PATH = '/opt/homebrew/lib/libgeos_c.dylib'
 
 
 # Quick-start development settings - unsuitable for production
@@ -39,8 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app',
     'django.contrib.gis',
-    'rest_framework',
-    'django_filters',
     'import_export',
 ]
 
@@ -89,7 +92,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.mysql',
-        'NAME': 'db_data',
+        'NAME': 'db_data_center',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': '127.0.0.1',
@@ -144,8 +147,3 @@ TEMPLATES[0]['DIRS'] = [BASE_DIR / 'templates']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100,
-}
