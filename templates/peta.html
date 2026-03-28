@@ -59,7 +59,7 @@
     <div class="hero-strip">
         <div class="hero-strip-inner">
             <div>
-                <h1>Portal Data Wilayah & Fiskal Indonesia</h1>
+                <h1>Portal Data Wilayah &amp; Fiskal Indonesia</h1>
                 <p>Klik wilayah pada peta untuk melihat data variabel dan tren historis</p>
             </div>
             <div class="stat-chips">
@@ -74,16 +74,65 @@
     <main>
         <div class="content-area">
 
-            <!-- MAP CARD -->
-            <div class="map-card">
-                <div class="map-card-header">
-                    <h2>Peta {{ tipe_aktif }} Indonesia</h2>
-                    <span class="map-hint">💡 Klik wilayah untuk melihat data</span>
-                </div>
-                <div id="map" role="main" aria-label="Peta interaktif Indonesia"></div>
-            </div>
+            <!-- KOLOM KIRI: Peta + Chart sejajar -->
+            <div class="main-col">
 
-            <!-- SIDEBAR -->
+                <!-- MAP CARD -->
+                <div class="map-card">
+                    <div class="map-card-header">
+                        <h2>Peta {{ tipe_aktif }} Indonesia</h2>
+                        <span class="map-hint">💡 Klik wilayah untuk melihat data</span>
+                    </div>
+                    <div id="map" role="main" aria-label="Peta interaktif Indonesia"></div>
+                </div>
+
+                <!-- CHART CARD (sejajar di bawah peta, dalam kolom yang sama) -->
+                <div class="chart-card" aria-label="Grafik Perbandingan Data">
+                    <!-- Header -->
+                    <div class="chart-card-header">
+                        <h3>📈 Grafik Perbandingan Data Wilayah</h3>
+                        <div class="chart-header-controls" id="chartHeaderControls">
+                            <button class="chart-type-btn active" id="btnBar" onclick="setChartType('bar')">📊
+                                Bar</button>
+                            <button class="chart-type-btn" id="btnLine" onclick="setChartType('line')">📉 Tren</button>
+                            <select class="chart-select" id="chartTahunSelect" onchange="onChartTahunChange()"></select>
+                        </div>
+                    </div>
+                    <!-- Body: sidebar kiri + canvas kanan -->
+                    <div class="chart-body">
+                        <!-- Panel kiri -->
+                        <div class="chart-sidebar">
+                            <!-- Wilayah aktif -->
+                            <div class="chart-panel">
+                                <div class="chart-panel-title">🗺️ Wilayah Aktif</div>
+                                <div class="wilayah-chips" id="wilayahChips"></div>
+                                <p class="chart-hint" id="chipHint">Klik wilayah pada peta untuk menambahkan (maks. 5)
+                                </p>
+                            </div>
+                            <!-- Variabel -->
+                            <div class="chart-panel">
+                                <div class="chart-panel-title">📋 Variabel</div>
+                                <div class="var-list" id="varList">
+                                    <p class="chart-hint">Pilih wilayah untuk melihat variabel</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Area chart -->
+                        <div class="chart-area">
+                            <div class="chart-placeholder" id="chartPlaceholder">
+                                <div class="chart-ico">📊</div>
+                                <p>Klik wilayah pada peta<br>untuk mulai membandingkan data</p>
+                            </div>
+                            <div class="chart-canvas-wrap" id="chartCanvasWrap" style="display:none">
+                                <canvas id="mainChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /main-col -->
+
+            <!-- SIDEBAR (tetap di kanan) -->
             <aside class="sidebar" aria-label="Panel data wilayah">
 
                 <!-- Info Wilayah -->
@@ -178,50 +227,6 @@
         </div>
     </main>
 
-    <!-- ── CHART SECTION ──────────────────────────────── -->
-    <section class="chart-section" id="chartSection" aria-label="Grafik Perbandingan Data">
-        <div class="chart-card">
-            <!-- Header -->
-            <div class="chart-card-header">
-                <h3>📈 Grafik Perbandingan Data Wilayah</h3>
-                <div class="chart-header-controls" id="chartHeaderControls">
-                    <button class="chart-type-btn active" id="btnBar" onclick="setChartType('bar')">📊 Bar</button>
-                    <button class="chart-type-btn" id="btnLine" onclick="setChartType('line')">📉 Tren</button>
-                    <select class="chart-select" id="chartTahunSelect" onchange="onChartTahunChange()"></select>
-                </div>
-            </div>
-            <!-- Body: sidebar kiri + canvas kanan -->
-            <div class="chart-body">
-                <!-- Panel kiri -->
-                <div class="chart-sidebar">
-                    <!-- Wilayah aktif -->
-                    <div class="chart-panel">
-                        <div class="chart-panel-title">🗺️ Wilayah Aktif</div>
-                        <div class="wilayah-chips" id="wilayahChips"></div>
-                        <p class="chart-hint" id="chipHint">Klik wilayah pada peta untuk menambahkan (maks. 5)</p>
-                    </div>
-                    <!-- Variabel -->
-                    <div class="chart-panel">
-                        <div class="chart-panel-title">📋 Variabel</div>
-                        <div class="var-list" id="varList">
-                            <p class="chart-hint">Pilih wilayah untuk melihat variabel</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Area chart -->
-                <div class="chart-area">
-                    <div class="chart-placeholder" id="chartPlaceholder">
-                        <div class="chart-ico">📊</div>
-                        <p>Klik wilayah pada peta<br>untuk mulai membandingkan data</p>
-                    </div>
-                    <div class="chart-canvas-wrap" id="chartCanvasWrap" style="display:none">
-                        <canvas id="mainChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- ── FOOTER ─────────────────────────────────────────────── -->
     <footer>
         <div class="footer-top">
@@ -275,19 +280,12 @@
     <script>
         // ── CHART MODULE (multi-wilayah + multi-variabel) ──
         let chartInstance = null;
-        let chartMode = 'bar';       // 'bar' | 'line'
+        let chartMode = 'bar';
         let chartActiveTahun = null;
 
-        // { id: { nama, color, data: { tahun: [{variabel,nilai}] } } }
         const chartDataByWilayah = {};
-
-        // Set id wilayah yang aktif di chart
         const activeWilayahIds = [];
-
-        // Set variabel yang dicentang
         let activeVars = new Set();
-
-        // Semua tahun & variabel yang tersedia (union dari semua wilayah)
         let allTahunList = [];
         let allVarList = [];
 
@@ -314,9 +312,8 @@
             renderChart();
         }
 
-        // -- Fetch data 1 wilayah (semua tahun paralel) --
         async function fetchWilayahData(id, nama) {
-            if (chartDataByWilayah[id]) return; // sudah ada, skip
+            if (chartDataByWilayah[id]) return;
             const fetches = TAHUN_LIST.map(t =>
                 fetch(`/data/wilayah/${id}/?tahun=${t}`)
                     .then(r => r.json())
@@ -335,7 +332,6 @@
                 return;
             }
             if (!activeWilayahIds.includes(id)) activeWilayahIds.push(id);
-
             await fetchWilayahData(id, nama);
             rebuildUnionLists();
             renderWilayahChips();
@@ -373,9 +369,7 @@
             });
             allTahunList = [...tahunSet].sort();
             allVarList = [...varSet];
-            // jaaga activeVars: hapus yang sudah tidak ada
             activeVars = new Set([...activeVars].filter(v => varSet.has(v)));
-            // kalau belum ada pilihan, centang semua
             if (activeVars.size === 0) allVarList.forEach(v => activeVars.add(v));
             if (!chartActiveTahun || !tahunSet.has(chartActiveTahun))
                 chartActiveTahun = allTahunList[allTahunList.length - 1] || null;
@@ -383,10 +377,7 @@
 
         function renderWilayahChips() {
             const el = document.getElementById('wilayahChips');
-            if (activeWilayahIds.length === 0) {
-                el.innerHTML = '';
-                return;
-            }
+            if (activeWilayahIds.length === 0) { el.innerHTML = ''; return; }
             el.innerHTML = activeWilayahIds.map(id => {
                 const d = chartDataByWilayah[id];
                 const nama = d ? d.nama : id;
@@ -416,12 +407,11 @@
 
         function toggleVar(v) {
             if (activeVars.has(v)) {
-                if (activeVars.size === 1) return; // minimal 1 dipilih
+                if (activeVars.size === 1) return;
                 activeVars.delete(v);
             } else {
                 activeVars.add(v);
             }
-            // sync checkbox state
             const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
             const cb = document.getElementById(safeId);
             if (cb) cb.checked = activeVars.has(v);
@@ -467,7 +457,6 @@
             };
 
             if (chartMode === 'bar') {
-                // X = variabel terpilih, setiap wilayah = 1 dataset (grouped bar)
                 const labels = selectedVars;
                 const datasets = activeWilayahIds.map(id => {
                     const d = chartDataByWilayah[id];
@@ -485,18 +474,14 @@
                 chartInstance = new Chart(ctx, { type: 'bar', data: { labels, datasets }, options: commonOpts });
 
             } else {
-                // X = tahun, setiap kombinasi (wilayah x variabel) = 1 garis
                 const labels = allTahunList;
                 const dashPatterns = [[0, 0], [6, 3], [3, 3], [6, 3, 2, 3]];
                 const datasets = [];
-                let dsIdx = 0;
                 activeWilayahIds.forEach((id, wi) => {
                     const d = chartDataByWilayah[id];
                     if (!d) return;
                     selectedVars.forEach((v, vi) => {
                         const baseColor = CHART_COLORS[wi % CHART_COLORS.length];
-                        // lighten slightly per variable
-                        const alpha = 1 - vi * 0.2;
                         datasets.push({
                             label: `${d.nama} — ${v}`,
                             data: labels.map(t => {
@@ -514,7 +499,6 @@
                             tension: 0.3,
                             spanGaps: true,
                         });
-                        dsIdx++;
                     });
                 });
                 chartInstance = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: commonOpts });
@@ -561,8 +545,6 @@
         // ── GEOJSON LAYER ──
         let geojsonLayer = null;
 
-        // Karena geom disimpan di DB, kita fetch GeoJSON dari AJAX view
-        // Namun jika geom masih kosong, fallback ke pesan info di peta
         function loadGeoJSON() {
             fetch("{% url 'wilayah-list' %}?tipe={{ tipe_aktif }}")
                 .then(r => r.json())
@@ -593,9 +575,7 @@
                     }).addTo(map);
                     try { map.fitBounds(geojsonLayer.getBounds(), { padding: [20, 20] }); } catch (e) { }
                 })
-                .catch(() => {
-                    console.warn('GeoJSON tidak dapat dimuat');
-                });
+                .catch(() => { console.warn('GeoJSON tidak dapat dimuat'); });
         }
 
         loadGeoJSON();
@@ -605,12 +585,10 @@
             activeWilayahId = id;
             document.getElementById('placeholderWilayah').style.display = 'none';
             document.getElementById('wilayahInfo').style.display = 'block';
-            // Tambahkan ke chart comparison
             addWilayahToChart(id, nama);
             document.getElementById('wNama').textContent = nama;
             document.getElementById('wBadge').textContent = tipe + (kode ? ' · ' + kode : '');
 
-            // render tombol tahun
             const tf = document.getElementById('tahunFilter');
             tf.innerHTML = '';
             TAHUN_LIST.forEach(t => {
@@ -626,7 +604,6 @@
                 tf.appendChild(btn);
             });
 
-            // highlight list sidebar
             document.querySelectorAll('[id^="item-"]').forEach(el => el.style.background = '');
             const item = document.getElementById('item-' + id);
             if (item) { item.style.background = '#e8f0fe'; item.scrollIntoView({ block: 'nearest' }); }
@@ -649,16 +626,15 @@
                         return;
                     }
                     tbody.innerHTML = rows.map(r => `
-          <tr>
-            <td>
-              <div class="variabel-name">${r.variabel}</div>
-              ${r.deskripsi ? `<div class="variabel-desc">${r.deskripsi}</div>` : ''}
-            </td>
-            <td class="nilai">${formatAngka(r.nilai)}</td>
-          </tr>
-        `).join('');
+                        <tr>
+                            <td>
+                                <div class="variabel-name">${r.variabel}</div>
+                                ${r.deskripsi ? `<div class="variabel-desc">${r.deskripsi}</div>` : ''}
+                            </td>
+                            <td class="nilai">${formatAngka(r.nilai)}</td>
+                        </tr>
+                    `).join('');
 
-                    // quick stats
                     const varUnik = [...new Set(rows.map(r => r.variabel))].length;
                     const tahunUnik = [...new Set(rows.map(r => r.tahun))].length;
                     document.getElementById('statJmlVar').textContent = varUnik;
@@ -673,7 +649,6 @@
         // ── PILIH DARI LIST SIDEBAR ──
         function pilihWilayahDariList(id, nama, tipe, kode) {
             tampilkanDataWilayah(id, nama, tipe, kode);
-            // zoom ke wilayah jika geojsonLayer ada
             if (geojsonLayer) {
                 geojsonLayer.eachLayer(layer => {
                     if (layer.feature && layer.feature.properties.id === id) {
@@ -691,7 +666,6 @@
             window.location.href = '/?tipe=' + tipe;
         }
 
-        // Set dropdown sesuai URL param (Prettier-proof, tanpa Django template tag di HTML attr)
         (function () {
             const tipe = new URLSearchParams(window.location.search).get('tipe') || 'Provinsi';
             const sel = document.getElementById('tipeSelect');

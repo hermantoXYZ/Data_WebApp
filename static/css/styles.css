@@ -209,9 +209,19 @@ main {
     margin: 1.5rem auto;
     padding: 0 1.5rem;
     display: grid;
+    /* Kolom kiri (peta+chart) fleksibel, kolom kanan (sidebar) tetap 360px */
     grid-template-columns: 1fr 360px;
     gap: 1.25rem;
     align-items: start;
+}
+
+/* Kolom kiri: peta di atas, chart di bawah */
+.main-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+    /* cegah overflow pada grid */
 }
 
 /* MAP CARD */
@@ -465,13 +475,7 @@ main {
     flex-shrink: 0;
 }
 
-/* ── CHART SECTION ───────────────────────────── */
-.chart-section {
-    max-width: 1280px;
-    margin: 1.5rem auto 0;
-    padding: 0 1.5rem;
-}
-
+/* ── CHART CARD (sekarang di dalam .main-col, bukan section terpisah) ── */
 .chart-card {
     background: var(--white);
     border: 1px solid var(--border);
@@ -542,8 +546,8 @@ main {
 /* chart body = sidebar kiri + canvas kanan */
 .chart-body {
     display: grid;
-    grid-template-columns: 260px 1fr;
-    min-height: 420px;
+    grid-template-columns: 240px 1fr;
+    min-height: 380px;
 }
 
 .chart-sidebar {
@@ -693,69 +697,7 @@ main {
 .chart-canvas-wrap {
     flex: 1;
     position: relative;
-    min-height: 360px;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .chart-body {
-        grid-template-columns: 1fr;
-    }
-
-    .chart-sidebar {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .chart-panel {
-        flex: 1 1 200px;
-        border-bottom: none;
-        border-right: 1px solid var(--border);
-    }
-
-    .chart-panel:last-child {
-        border-right: none;
-    }
-
-    .chart-canvas-wrap {
-        min-height: 280px;
-    }
-}
-
-.chart-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-}
-
-.chart-card-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dk) 100%);
-    color: var(--white);
-    padding: .85rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: .6rem;
-}
-
-.chart-card-header h3 {
-    font-size: .95rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-}
-
-.chart-controls {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    flex-wrap: wrap;
+    min-height: 320px;
 }
 
 /* ── FOOTER ──────────────────────────────────── */
@@ -898,6 +840,10 @@ footer {
         grid-template-columns: 1fr;
     }
 
+    .main-col {
+        width: 100%;
+    }
+
     .sidebar {
         flex-direction: row;
         flex-wrap: wrap;
@@ -909,6 +855,37 @@ footer {
 
     #map {
         height: 420px;
+    }
+
+    .chart-body {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .chart-body {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .chart-panel {
+        flex: 1 1 200px;
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+    }
+
+    .chart-panel:last-child {
+        border-right: none;
+    }
+
+    .chart-canvas-wrap {
+        min-height: 280px;
     }
 }
 
