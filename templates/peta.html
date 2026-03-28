@@ -90,7 +90,7 @@
                 <div class="chart-card" aria-label="Grafik Perbandingan Data">
                     <!-- Header -->
                     <div class="chart-card-header">
-                        <h3>📈 Grafik Perbandingan Data Wilayah</h3>
+                        <h3>Grafik Perbandingan Data Wilayah</h3>
                         <div class="chart-header-controls" id="chartHeaderControls">
                             <button class="chart-type-btn active" id="btnBar" onclick="setChartType('bar')">📊
                                 Bar</button>
@@ -137,7 +137,7 @@
 
                 <!-- Info Wilayah -->
                 <div class="info-card" id="cardWilayah">
-                    <div class="info-card-head">📊 Data Wilayah</div>
+                    <div class="info-card-head">Data Wilayah</div>
                     <div class="info-card-body">
 
                         <!-- Placeholder -->
@@ -186,7 +186,7 @@
 
                 <!-- Legend -->
                 <div class="info-card legend-card">
-                    <div class="info-card-head">🎨 Legenda</div>
+                    <div class="info-card-head">Legenda</div>
                     <div class="info-card-body">
                         <div class="legend-item">
                             <div class="legend-dot" style="background:#1a4f8a"></div>Wilayah terpilih
@@ -199,15 +199,14 @@
                             normal
                         </div>
                         <div class="legend-item" style="margin-top:.5rem;font-size:.75rem;color:#667085">
-                            ⚠️ Wilayah abu-abu berarti kolom <code>geom</code> belum terisi. Isi melalui Admin atau
-                            import GeoJSON.
+                            ⚠️ Wilayah <code>geom</code> belum terisi. Isi melalui Admin
                         </div>
                     </div>
                 </div>
 
                 <!-- Daftar Wilayah -->
                 <div class="info-card">
-                    <div class="info-card-head">📋 Daftar Wilayah</div>
+                    <div class="info-card-head">Daftar Wilayah</div>
                     <div class="info-card-body" style="max-height:220px;overflow-y:auto;padding:.5rem">
                         {% for w in wilayah_list %}
                         <div id="item-{{ w.id }}"
