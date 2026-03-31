@@ -1,13 +1,11 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Data Wilayah Indonesia{% endblock %}</title>
-    <meta name="description"
-        content="Portal data wilayah dan fiskal Indonesia dengan visualisasi geospasial interaktif." />
+    <meta name="description" content="Portal data dengan visualisasi geospasial interaktif." />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,16 +31,14 @@
             </a>
 
             <ul class="nav-links" id="navLinks">
-                <li><a href="{% url 'peta' %}" class="active" id="nav-peta">Peta</a></li>
-                <li><a href="#" id="nav-data">Data</a></li>
-                <li><a href="#" id="nav-wilayah">Wilayah</a></li>
-                <li><a href="#" id="nav-variabel">Variabel</a></li>
-                <li><a href="/admin/" id="nav-admin">Admin</a></li>
+                <!-- <li><a href="{% url 'peta' %}" class="active" id="nav-peta">Peta</a></li>
+                <li><a href="/admin/" id="nav-admin">Admin</a></li> -->
             </ul>
 
             <div class="nav-filter">
                 <label for="tipeSelect">Tingkat:</label>
                 <select id="tipeSelect" onchange="gantiTipe(this.value)">
+                    <option value="Negara">Negara</option>
                     <option value="Provinsi">Provinsi</option>
                     <option value="Kabupaten">Kabupaten</option>
                     <option value="Kota">Kota</option>
@@ -59,7 +55,7 @@
     <div class="hero-strip">
         <div class="hero-strip-inner">
             <div>
-                <h1>Portal Data Wilayah &amp; Fiskal Indonesia</h1>
+                <h1>Portal Data</h1>
                 <p>Klik wilayah pada peta untuk melihat data variabel dan tren historis</p>
             </div>
             <div class="stat-chips">
@@ -112,6 +108,37 @@
                             <!-- Variabel -->
                             <div class="chart-panel">
                                 <div class="chart-panel-title">📋 Variabel</div>
+
+                                <!-- Search + bulk-select controls (tampil hanya jika ada var) -->
+                                <div id="varControls" style="display:none;margin-bottom:.4rem">
+                                    <!-- Search box -->
+                                    <div style="position:relative;margin-bottom:.35rem">
+                                        <span style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:.8rem;pointer-events:none">🔍</span>
+                                        <input
+                                            type="text"
+                                            id="varSearch"
+                                            placeholder="Cari variabel…"
+                                            oninput="filterVarList(this.value)"
+                                            autocomplete="off"
+                                            style="width:100%;padding:.38rem .65rem .38rem 2rem;border:1.5px solid #e2e8f0;border-radius:7px;font-size:.78rem;font-family:inherit;outline:none;transition:border .2s;background:#f8fafc;box-sizing:border-box"
+                                            onfocus="this.style.borderColor='#1a4f8a';this.style.background='#fff'"
+                                            onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'"
+                                        />
+                                    </div>
+                                    <!-- Bulk-select buttons + count -->
+                                    <div style="display:flex;align-items:center;gap:.35rem;flex-wrap:wrap">
+                                        <button onclick="selectAllVars()" title="Pilih semua variabel yang tampil"
+                                            style="font-size:.7rem;padding:.22rem .55rem;border:1px solid #1a4f8a;color:#1a4f8a;background:#fff;border-radius:5px;cursor:pointer;transition:all .15s"
+                                            onmouseover="this.style.background='#1a4f8a';this.style.color='#fff'"
+                                            onmouseout="this.style.background='#fff';this.style.color='#1a4f8a'">✅ Pilih Semua</button>
+                                        <button onclick="deselectAllVars()" title="Batal pilih semua"
+                                            style="font-size:.7rem;padding:.22rem .55rem;border:1px solid #e63946;color:#e63946;background:#fff;border-radius:5px;cursor:pointer;transition:all .15s"
+                                            onmouseover="this.style.background='#e63946';this.style.color='#fff'"
+                                            onmouseout="this.style.background='#fff';this.style.color='#e63946'">✕ Batal Semua</button>
+                                        <span id="varCount" style="font-size:.7rem;color:#9ca3af;margin-left:auto"></span>
+                                    </div>
+                                </div>
+
                                 <div class="var-list" id="varList">
                                     <p class="chart-hint">Pilih wilayah untuk melihat variabel</p>
                                 </div>
@@ -207,10 +234,38 @@
                 <!-- Daftar Wilayah -->
                 <div class="info-card">
                     <div class="info-card-head">Daftar Wilayah</div>
-                    <div class="info-card-body" style="max-height:220px;overflow-y:auto;padding:.5rem">
+
+                    <!-- Search Box -->
+                    <div style="padding:.5rem .75rem .25rem;position:relative;display:flex;align-items:center;gap:.4rem;">
+                        <span style="position:absolute;left:1.2rem;color:#9ca3af;font-size:.85rem;pointer-events:none;">🔍</span>
+                        <input
+                            type="text"
+                            id="searchWilayah"
+                            placeholder="Cari nama wilayah..."
+                            oninput="filterDaftarWilayah(this.value)"
+                            autocomplete="off"
+                            style="width:100%;padding:.42rem .75rem .42rem 2rem;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.8rem;font-family:inherit;outline:none;transition:border .2s;background:#f8fafc;"
+                            onfocus="this.style.borderColor='#1a4f8a';this.style.background='#fff'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'"
+                        />
+                        <button
+                            id="searchClearBtn"
+                            onclick="clearCariWilayah()"
+                            title="Hapus pencarian"
+                            style="display:none;position:absolute;right:1.2rem;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1rem;line-height:1;padding:0;"
+                        >✕</button>
+                    </div>
+
+                    <!-- Hasil count -->
+                    <div id="wilayahSearchCount" style="display:none;padding:.1rem .75rem .25rem;font-size:.72rem;color:#667085;"></div>
+
+                    <!-- List -->
+                    <div class="info-card-body" style="max-height:220px;overflow-y:auto;padding:.5rem" id="daftarWilayahList">
                         {% for w in wilayah_list %}
                         <div id="item-{{ w.id }}"
-                            onclick="pilihWilayahDariList('{{ w.id }}', '{{ w.nama_wilayah }}', '{{ w.tipe_wilayah }}', '{{ w.kode_wilayah }}')"
+                            data-nama="{{ w.nama_wilayah|lower }}"
+                            data-kode="{{ w.kode_wilayah }}"
+                            onclick="pilihWilayahDariList({{ w.id }}, '{{ w.nama_wilayah }}', '{{ w.tipe_wilayah }}', '{{ w.kode_wilayah }}')"
                             style="padding:.45rem .6rem;border-radius:6px;cursor:pointer;font-size:.82rem;transition:background .15s;margin-bottom:2px;"
                             onmouseover="this.style.background='#f4f6f9'" onmouseout="this.style.background=''">
                             <span style="font-weight:500">{{ w.nama_wilayah }}</span>
@@ -219,6 +274,8 @@
                         {% empty %}
                         <p style="font-size:.82rem;color:#667085;padding:.5rem">Belum ada wilayah dengan tipe ini.</p>
                         {% endfor %}
+                        <!-- Pesan kosong saat search tidak ada hasil -->
+                        <p id="noSearchResult" style="display:none;font-size:.82rem;color:#9ca3af;padding:.5rem;text-align:center;">Tidak ada hasil ditemukan</p>
                     </div>
                 </div>
 
@@ -390,11 +447,28 @@
 
         function renderVarList() {
             const el = document.getElementById('varList');
+            const controls = document.getElementById('varControls');
             if (allVarList.length === 0) {
                 el.innerHTML = '<p class="chart-hint">Pilih wilayah untuk melihat variabel</p>';
+                if (controls) controls.style.display = 'none';
                 return;
             }
-            el.innerHTML = allVarList.map(v => {
+            if (controls) controls.style.display = 'block';
+            // reset search
+            const srch = document.getElementById('varSearch');
+            if (srch) srch.value = '';
+            _renderVarItems(allVarList);
+        }
+
+        // Render item checkbox untuk daftar variabel tertentu
+        function _renderVarItems(list) {
+            const el = document.getElementById('varList');
+            if (list.length === 0) {
+                el.innerHTML = '<p class="chart-hint" style="color:#9ca3af;font-style:italic">Tidak ada variabel ditemukan</p>';
+                _updateVarCount(0, 0);
+                return;
+            }
+            el.innerHTML = list.map(v => {
                 const checked = activeVars.has(v) ? 'checked' : '';
                 const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
                 return `<div class="var-item" onclick="toggleVar('${v}')">
@@ -402,11 +476,54 @@
                     <label for="${safeId}">${v}</label>
                 </div>`;
             }).join('');
+            _updateVarCount(list.length, allVarList.length);
+        }
+
+        function _updateVarCount(visible, total) {
+            const el = document.getElementById('varCount');
+            if (!el) return;
+            el.textContent = visible < total ? `${visible}/${total} variabel` : `${total} variabel`;
+        }
+
+        // Filter var-list berdasarkan query
+        let _varSearchQuery = '';
+        function filterVarList(query) {
+            _varSearchQuery = query.trim().toLowerCase();
+            const filtered = _varSearchQuery
+                ? allVarList.filter(v => v.toLowerCase().includes(_varSearchQuery))
+                : allVarList;
+            _renderVarItems(filtered);
+        }
+
+        // Pilih semua variabel yang sedang tampil (sesuai filter)
+        function selectAllVars() {
+            const q = _varSearchQuery;
+            const visible = q ? allVarList.filter(v => v.toLowerCase().includes(q)) : allVarList;
+            visible.forEach(v => activeVars.add(v));
+            _renderVarItems(visible.length < allVarList.length ? visible : allVarList);
+            renderChart();
+        }
+
+        // Batal pilih semua variabel yang sedang tampil (minimal 1 harus tetap terpilih)
+        function deselectAllVars() {
+            const q = _varSearchQuery;
+            const visible = q ? allVarList.filter(v => v.toLowerCase().includes(q)) : allVarList;
+            // Jika semua akan di-deselect, pertahankan 1 variabel pertama dari allVarList
+            const remaining = allVarList.filter(v => activeVars.has(v) && !visible.includes(v));
+            if (remaining.length === 0 && visible.length > 0) {
+                // pastikan minimal satu tetap aktif
+                activeVars.clear();
+                activeVars.add(allVarList[0]);
+            } else {
+                visible.forEach(v => activeVars.delete(v));
+            }
+            _renderVarItems(q ? visible : allVarList);
+            renderChart();
         }
 
         function toggleVar(v) {
             if (activeVars.has(v)) {
-                if (activeVars.size === 1) return;
+                if (activeVars.size === 1) return;  // minimal 1 harus tetap terpilih
                 activeVars.delete(v);
             } else {
                 activeVars.add(v);
@@ -506,15 +623,15 @@
     </script>
     <script>
         // ── DATA DARI DJANGO ──
-        const WILAYAH_DATA_URL = "{% url 'data-wilayah' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', '');
+        const WILAYAH_DATA_URL = "{% url 'data-wilayah' 0 %}".replace('/0/', '/');
         const TAHUN_LIST = {{ tahun_list| safe }};
 
         // ── INISIALISASI PETA ──
         const map = L.map('map', {
             center: [-2.5, 118],
             zoom: 5,
-            minZoom: 4,
-            maxZoom: 12,
+            minZoom: 2,
+            maxZoom: 18,   // batas tile OSM — izinkan zoom penuh
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -651,7 +768,9 @@
             if (geojsonLayer) {
                 geojsonLayer.eachLayer(layer => {
                     if (layer.feature && layer.feature.properties.id === id) {
-                        try { map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: 10 }); } catch (e) { }
+                        // maxZoom pada fitBounds disesuaikan per tipe wilayah
+                        const _mz = {'Negara':5,'Provinsi':8,'Kabupaten':12,'Kota':13};
+                        try { map.fitBounds(layer.getBounds(), { padding: [30, 30], maxZoom: _mz[tipe] || 10 }); } catch (e) { }
                         if (selectedLayer) styleReset(selectedLayer);
                         selectedLayer = layer;
                         styleSelected(layer);
@@ -683,6 +802,42 @@
             if (n >= 1e9) return (n / 1e9).toFixed(2) + ' M';
             if (n >= 1e6) return (n / 1e6).toFixed(2) + ' Jt';
             return new Intl.NumberFormat('id-ID').format(n);
+        }
+
+        // ── SEARCH DAFTAR WILAYAH ──
+        function filterDaftarWilayah(query) {
+            const q = query.trim().toLowerCase();
+            const items = document.querySelectorAll('#daftarWilayahList [data-nama]');
+            const clearBtn = document.getElementById('searchClearBtn');
+            const countEl  = document.getElementById('wilayahSearchCount');
+            const noResult = document.getElementById('noSearchResult');
+
+            clearBtn.style.display = q ? 'block' : 'none';
+
+            let visible = 0;
+            items.forEach(item => {
+                const nama = item.dataset.nama || '';
+                const kode = (item.dataset.kode || '').toLowerCase();
+                const match = !q || nama.includes(q) || kode.includes(q);
+                item.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            if (q) {
+                noResult.style.display = visible === 0 ? 'block' : 'none';
+                countEl.textContent = visible + ' wilayah ditemukan';
+                countEl.style.display = 'block';
+            } else {
+                noResult.style.display = 'none';
+                countEl.style.display = 'none';
+            }
+        }
+
+        function clearCariWilayah() {
+            const input = document.getElementById('searchWilayah');
+            input.value = '';
+            input.focus();
+            filterDaftarWilayah('');
         }
     </script>
 
