@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.shortcuts import render, redirect
 from django.urls import path
 from django.utils.html import format_html
-from .models import Wilayah, NamaVariabel, Data
+from .models import Wilayah, KategoriVariabel, NamaVariabel, Data
 from .resources import baca_file, import_dataframe 
 
 class ImportDataForm(forms.Form):
@@ -44,18 +44,32 @@ class WilayahAdmin(admin.ModelAdmin):
     ordering = ('tipe_wilayah', 'nama_wilayah')
 
 
+@admin.register(KategoriVariabel)
+class KategoriVariabelAdmin(admin.ModelAdmin):
+    list_display  = ('nama_kategori', 'urutan', 'jumlah_variabel', 'deskripsi')
+    search_fields = ('nama_kategori',)
+    ordering      = ('urutan', 'nama_kategori')
+
+    def jumlah_variabel(self, obj):
+        return obj.variabel.count()
+    jumlah_variabel.short_description = '# Variabel'
+
+
 @admin.register(NamaVariabel)
 class NamaVariabelAdmin(admin.ModelAdmin):
-    list_display = ('nama_variabel', 'deskripsi')
+    list_display  = ('nama_variabel', 'kategori', 'deskripsi')
+    list_filter   = ('kategori',)
     search_fields = ('nama_variabel',)
+    autocomplete_fields = ['kategori']
+    ordering      = ('kategori__urutan', 'kategori__nama_kategori', 'nama_variabel')
 
 
 @admin.register(Data)
 class DataAdmin(admin.ModelAdmin):
-    list_display = ('wilayah', 'variabel_data', 'tahun', 'nilai_formatted')
-    list_filter = ('tahun', 'wilayah__tipe_wilayah', 'variabel_data')
+    list_display  = ('wilayah', 'variabel_data', 'tahun', 'nilai_formatted')
+    list_filter   = ('tahun', 'wilayah__tipe_wilayah', 'variabel_data__kategori', 'variabel_data')
     search_fields = ('wilayah__nama_wilayah', 'variabel_data__nama_variabel')
-    ordering = ('wilayah__nama_wilayah', 'tahun', 'variabel_data__nama_variabel')
+    ordering      = ('wilayah__nama_wilayah', 'tahun', 'variabel_data__nama_variabel')
     autocomplete_fields = ['wilayah', 'variabel_data']
 
     change_list_template = 'admin/data_change_list.html'

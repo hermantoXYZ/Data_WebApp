@@ -59,10 +59,11 @@ def data_wilayah_json(request, wilayah_id):
 
     data = [
         {
-            'tahun':     row.tahun,
-            'variabel':  row.variabel_data.nama_variabel,
+            'tahun':    row.tahun,
+            'variabel': row.variabel_data.nama_variabel,
             'deskripsi': row.variabel_data.deskripsi or '',
-            'nilai':     float(row.nilai),
+            'kategori': row.variabel_data.kategori.nama_kategori if row.variabel_data.kategori else None,
+            'nilai':    float(row.nilai),
         }
         for row in qs
     ]

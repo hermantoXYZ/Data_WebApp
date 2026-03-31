@@ -22,17 +22,42 @@ class Wilayah(models.Model):
         ordering = ['tipe_wilayah', 'nama_wilayah']
 
 
+class KategoriVariabel(models.Model):
+    nama_kategori = models.CharField(max_length=100, unique=True)
+    deskripsi     = models.TextField(blank=True, null=True)
+    urutan        = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Urutan tampil di filter/UI (0 = paling atas)'
+    )
+
+    def __str__(self):
+        return self.nama_kategori
+
+    class Meta:
+        verbose_name        = 'Kategori Variabel'
+        verbose_name_plural = 'Kategori Variabel'
+        ordering            = ['urutan', 'nama_kategori']
+
+
 class NamaVariabel(models.Model):
     nama_variabel = models.CharField(max_length=255, unique=True)
-    deskripsi = models.TextField(blank=True, null=True)
+    deskripsi     = models.TextField(blank=True, null=True)
+    kategori      = models.ForeignKey(
+        KategoriVariabel,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,          
+        related_name='variabel',
+        db_index=True,
+        help_text='Kelompok/kategori variabel ini (isi lewat Admin, opsional)'
+    )
 
     def __str__(self):
         return self.nama_variabel
 
     class Meta:
-        verbose_name = 'Nama Variabel'
+        verbose_name        = 'Nama Variabel'
         verbose_name_plural = 'Nama Variabel'
-        ordering = ['nama_variabel']
+        ordering = ['kategori__urutan', 'kategori__nama_kategori', 'nama_variabel']
 
 
 class Data(models.Model):
