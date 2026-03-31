@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.conf import settings
-from .models import Wilayah, NamaVariabel, Data
+from .models import Wilayah, NamaVariabel, Data, KategoriVariabel
 
 
 _GEOJSON_CACHE = {}
@@ -33,12 +33,16 @@ def peta_view(request):
     tipe_wilayah  = request.GET.get('tipe', 'Provinsi')
     wilayah_list  = Wilayah.objects.filter(tipe_wilayah=tipe_wilayah).order_by('nama_wilayah')
     tahun_list    = list(Data.objects.values_list('tahun', flat=True).distinct().order_by('tahun'))
-    variabel_list = NamaVariabel.objects.all().order_by('nama_variabel')
+    variabel_list = NamaVariabel.objects.select_related('kategori').order_by(
+        'kategori__urutan', 'kategori__nama_kategori', 'nama_variabel'
+    )
+    kategori_list = KategoriVariabel.objects.prefetch_related('variabel').order_by('urutan', 'nama_kategori')
 
     context = {
         'wilayah_list':  wilayah_list,
         'tahun_list':    tahun_list,
         'variabel_list': variabel_list,
+        'kategori_list': kategori_list,
         'tipe_aktif':    tipe_wilayah,
     }
     return render(request, 'peta.html', context)

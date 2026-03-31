@@ -415,16 +415,24 @@
         function rebuildUnionLists() {
             const tahunSet = new Set();
             const varSet = new Set();
+            // varKategori: { namaVar -> namaKategori|null }
+            const varKategori = {};
             activeWilayahIds.forEach(id => {
                 const d = chartDataByWilayah[id];
                 if (!d) return;
                 Object.entries(d.data).forEach(([t, rows]) => {
                     tahunSet.add(t);
-                    rows.forEach(r => varSet.add(r.variabel));
+                    rows.forEach(r => {
+                        varSet.add(r.variabel);
+                        if (r.kategori && !varKategori[r.variabel])
+                            varKategori[r.variabel] = r.kategori;
+                    });
                 });
             });
             allTahunList = [...tahunSet].sort();
             allVarList = [...varSet];
+            // Simpan mapping var -> kategori untuk dipakai saat render
+            window._varKategoriMap = varKategori;
             activeVars = new Set([...activeVars].filter(v => varSet.has(v)));
             if (activeVars.size === 0) allVarList.forEach(v => activeVars.add(v));
             if (!chartActiveTahun || !tahunSet.has(chartActiveTahun))
@@ -460,7 +468,7 @@
             _renderVarItems(allVarList);
         }
 
-        // Render item checkbox untuk daftar variabel tertentu
+        // Render item checkbox untuk daftar variabel tertentu — dikelompokkan per kategori
         function _renderVarItems(list) {
             const el = document.getElementById('varList');
             if (list.length === 0) {
@@ -468,14 +476,42 @@
                 _updateVarCount(0, 0);
                 return;
             }
-            el.innerHTML = list.map(v => {
-                const checked = activeVars.has(v) ? 'checked' : '';
-                const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
-                return `<div class="var-item" onclick="toggleVar('${v}')">
-                    <input type="checkbox" id="${safeId}" ${checked} onclick="event.stopPropagation();toggleVar('${v}')">
-                    <label for="${safeId}">${v}</label>
-                </div>`;
-            }).join('');
+
+            const kategoriMap = window._varKategoriMap || {};
+
+            // Kelompokkan list berdasarkan kategori
+            const groups = {};       // { namaKategori: [var, ...] }
+            const orderedGroups = []; // urutan kemunculan grup
+            list.forEach(v => {
+                const kat = kategoriMap[v] || '— Tanpa Kategori —';
+                if (!groups[kat]) { groups[kat] = []; orderedGroups.push(kat); }
+                groups[kat].push(v);
+            });
+
+            // Urutkan grup: ikuti KATEGORI_LIST, sisanya taruh di bawah
+            const katOrder = KATEGORI_LIST.map(k => k.nama);
+            orderedGroups.sort((a, b) => {
+                const ia = katOrder.indexOf(a);
+                const ib = katOrder.indexOf(b);
+                if (ia === -1 && ib === -1) return a.localeCompare(b);
+                if (ia === -1) return 1;
+                if (ib === -1) return -1;
+                return ia - ib;
+            });
+
+            let html = '';
+            orderedGroups.forEach(kat => {
+                html += `<div class="var-group-header">${kat}</div>`;
+                groups[kat].forEach(v => {
+                    const checked = activeVars.has(v) ? 'checked' : '';
+                    const safeId = 'var_' + v.replace(/[^a-zA-Z0-9]/g, '_');
+                    html += `<div class="var-item" onclick="toggleVar('${v}')">
+                        <input type="checkbox" id="${safeId}" ${checked} onclick="event.stopPropagation();toggleVar('${v}')">
+                        <label for="${safeId}">${v}</label>
+                    </div>`;
+                });
+            });
+            el.innerHTML = html;
             _updateVarCount(list.length, allVarList.length);
         }
 
@@ -625,6 +661,12 @@
         // ── DATA DARI DJANGO ──
         const WILAYAH_DATA_URL = "{% url 'data-wilayah' 0 %}".replace('/0/', '/');
         const TAHUN_LIST = {{ tahun_list| safe }};
+        // Kategori dari DB: [{id, nama, urutan}] — dipakai untuk mengurutkan/label group variabel
+        const KATEGORI_LIST = [
+            {% for k in kategori_list %}
+            { id: {{ k.id }}, nama: "{{ k.nama_kategori|escapejs }}", urutan: {{ k.urutan }} }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
 
         // ── INISIALISASI PETA ──
         const map = L.map('map', {
@@ -741,15 +783,39 @@
                         tbody.innerHTML = '<tr><td colspan="2" class="loading-row">Tidak ada data untuk tahun ini</td></tr>';
                         return;
                     }
-                    tbody.innerHTML = rows.map(r => `
-                        <tr>
-                            <td>
-                                <div class="variabel-name">${r.variabel}</div>
-                                ${r.deskripsi ? `<div class="variabel-desc">${r.deskripsi}</div>` : ''}
-                            </td>
-                            <td class="nilai">${formatAngka(r.nilai)}</td>
-                        </tr>
-                    `).join('');
+
+                    // Kelompokkan baris per kategori
+                    const katOrder = KATEGORI_LIST.map(k => k.nama);
+                    const groups = {};
+                    const orderedGroups = [];
+                    rows.forEach(r => {
+                        const kat = r.kategori || '— Tanpa Kategori —';
+                        if (!groups[kat]) { groups[kat] = []; orderedGroups.push(kat); }
+                        groups[kat].push(r);
+                    });
+                    orderedGroups.sort((a, b) => {
+                        const ia = katOrder.indexOf(a);
+                        const ib = katOrder.indexOf(b);
+                        if (ia === -1 && ib === -1) return a.localeCompare(b);
+                        if (ia === -1) return 1;
+                        if (ib === -1) return -1;
+                        return ia - ib;
+                    });
+
+                    let html = '';
+                    orderedGroups.forEach(kat => {
+                        html += `<tr class="table-group-header"><td colspan="2">${kat}</td></tr>`;
+                        groups[kat].forEach(r => {
+                            html += `<tr>
+                                <td>
+                                    <div class="variabel-name">${r.variabel}</div>
+                                    ${r.deskripsi ? `<div class="variabel-desc">${r.deskripsi}</div>` : ''}
+                                </td>
+                                <td class="nilai">${formatAngka(r.nilai)}</td>
+                            </tr>`;
+                        });
+                    });
+                    tbody.innerHTML = html;
 
                     const varUnik = [...new Set(rows.map(r => r.variabel))].length;
                     const tahunUnik = [...new Set(rows.map(r => r.tahun))].length;

@@ -615,6 +615,42 @@ main {
     color: var(--text);
 }
 
+/* Kategori group header di var-list */
+.var-group-header {
+    font-size: .67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .55px;
+    color: var(--primary);
+    background: #eef3fa;
+    padding: .22rem .5rem;
+    border-radius: 4px;
+    margin-top: .45rem;
+    margin-bottom: .1rem;
+    opacity: .9;
+}
+
+.var-group-header:first-child {
+    margin-top: 0;
+}
+
+/* Kategori group row di data-table */
+.data-table tr.table-group-header td {
+    background: linear-gradient(90deg, #eef3fa 0%, #f5f8fd 100%);
+    color: var(--primary);
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: .32rem .6rem;
+    border-bottom: 1.5px solid #c8d8ed;
+    border-top: 1px solid #dde6f1;
+}
+
+.data-table tr.table-group-header:first-child td {
+    border-top: none;
+}
+
 /* Wilayah chips */
 .wilayah-chips {
     display: flex;
